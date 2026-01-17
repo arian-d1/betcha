@@ -1,1 +1,1 @@
-export type ContractStatus = 'open' | 'active' | 'resolved' | 'cancelled';
+export type ContractStatus = "open" | "active" | "resolved" | "cancelled";

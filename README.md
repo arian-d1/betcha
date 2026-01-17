@@ -1,1 +1,1 @@
-# betcha
+# betcha (Stylized as "Betcha!")

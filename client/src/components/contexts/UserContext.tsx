@@ -4,12 +4,14 @@ import type { User } from "@/types/User"
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
-    login: (userData: User) => void;
-    logout: () => void;
-    updateBalance: (amount: number) => void;
 }
 
-export const UserContext = createContext<AuthContextType | null>(null);
+const defaultAuthContext: AuthContextType = {
+    user: null,
+    isAuthenticated: false,
+};
+
+export const UserContext = createContext<AuthContextType>(defaultAuthContext);
 
 export const ThemeContext = createContext<string>('light');
 

@@ -7,7 +7,7 @@ const EMAIL = "user@example.com";
 const users: Record<string, User> = {
   alice: {
     id: "u-1",
-    username: "crypto_queen",
+    username: "test1",
     fname: "Alice",
     lname: "Crypto",
     email: EMAIL,
@@ -17,7 +17,7 @@ const users: Record<string, User> = {
   },
   bob: {
     id: "u-2",
-    username: "betting_bob",
+    username: "test2",
     fname: "Bob",
     lname: "Bets",
     email: EMAIL,
@@ -27,7 +27,7 @@ const users: Record<string, User> = {
   },
   charlie: {
     id: "u-3",
-    username: "charlie_pro",
+    username: "test3",
     fname: "Charlie",
     lname: "Gaming",
     email: EMAIL,
@@ -37,7 +37,7 @@ const users: Record<string, User> = {
   },
   dana: {
     id: "u-4",
-    username: "dana_degen",
+    username: "test4",
     fname: "Dana",
     lname: "Degen",
     email: EMAIL,
@@ -47,41 +47,18 @@ const users: Record<string, User> = {
   },
 };
 export const MOCK_CONTRACTS: Contract[] = [
-  // --- OPEN CONTRACTS ---
+  // --- OPEN & ACTIVE (No winners yet) ---
   {
     id: "c-101",
     maker: users.alice,
     taker: null,
     title: "Chess Match: $50 Stakes",
-    description:
-      "Blitz 5+0 on Lichess. Winner takes all. I'm rated 1800, looking for a challenge.",
+    description: "Blitz 5+0 on Lichess. Winner takes all.",
     amount: 50.0,
     status: "open",
     created_at: "2024-03-24T10:00:00Z",
+    winner: ""
   },
-  {
-    id: "c-103",
-    maker: users.dana,
-    taker: null,
-    title: "F1: Verstappen to win Australian GP",
-    description:
-      "I'm betting Max wins the race. You take the field (anyone else wins).",
-    amount: 500.0,
-    status: "open",
-    created_at: "2024-03-25T09:00:00Z",
-  },
-  {
-    id: "c-104",
-    maker: users.charlie,
-    taker: null,
-    title: "CS2 1v1 Aim Map",
-    description: "Best of 30 rounds. AK-47 only. You host the server.",
-    amount: 15.75,
-    status: "open",
-    created_at: "2024-03-25T15:30:00Z",
-  },
-
-  // --- ACTIVE CONTRACTS ---
   {
     id: "c-201",
     maker: users.bob,
@@ -91,28 +68,19 @@ export const MOCK_CONTRACTS: Contract[] = [
     amount: 100.0,
     status: "active",
     created_at: "2024-03-23T08:00:00Z",
-  },
-  {
-    id: "c-202",
-    maker: users.dana,
-    taker: users.charlie,
-    title: "Solana hits $200 before Sunday",
-    description: "Using Coinbase price. Dana says Yes, Charlie says No.",
-    amount: 250.0,
-    status: "active",
-    created_at: "2024-03-24T11:00:00Z",
+    winner: ""
   },
 
-  // --- RESOLVED CONTRACTS ---
+  // --- RESOLVED CONTRACTS (With winners) ---
   {
     id: "c-301",
     maker: users.alice,
     taker: users.bob,
     title: "Weekly Steps Challenge",
-    description:
-      "Who walks more steps between Monday and Wednesday? Proof via HealthApp.",
+    description: "Who walks more steps? Proof via HealthApp.",
     amount: 20.0,
     status: "resolved",
+    winner: "u-1", // Alice won
     created_at: "2024-03-18T07:00:00Z",
   },
   {
@@ -120,22 +88,23 @@ export const MOCK_CONTRACTS: Contract[] = [
     maker: users.charlie,
     taker: users.dana,
     title: "UFC 299: O'Malley vs Vera",
-    description:
-      "Charlie took O'Malley. Dana took Vera. Resolved after the fight.",
+    description: "Charlie took O'Malley. Dana took Vera.",
     amount: 75.0,
     status: "resolved",
+    winner: "u-4", // Dana won
     created_at: "2024-03-10T22:00:00Z",
   },
 
-  // --- CANCELLED CONTRACTS ---
+  // --- CANCELLED ---
   {
     id: "c-401",
     maker: users.bob,
     taker: null,
     title: "NBA: Lakers vs Warriors",
-    description: "LeBron is out tonight, so I'm cancelling this wager.",
+    description: "LeBron is out tonight, so I'm cancelling.",
     amount: 40.0,
     status: "cancelled",
+    winner: "",
     created_at: "2024-03-22T18:00:00Z",
   },
 ];

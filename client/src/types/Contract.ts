@@ -5,6 +5,7 @@ export interface Contract {
   id: string;
   maker: User;
   taker: User | null;
+  winner: string;
   title: string;
   description: string;
   amount: number;

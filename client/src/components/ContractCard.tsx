@@ -25,6 +25,8 @@ import {
 import { useContext, useState } from "react";
 import { UserContext } from "./contexts/UserContext";
 import api from "@/api/axios";
+import { Tooltip, TooltipProvider } from "./ui/tooltip";
+import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 
 export default function ContractCard({ contract, onDelete }: { contract: Contract, onDelete?: (id: string) => void }) {
@@ -196,45 +198,57 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
           </CardContent>
 
           <CardFooter className="border-t bg-muted/10 h-20 flex items-center justify-center shrink-0 px-4">
-            {contract.status === "resolved" ? (
-              <div className="flex flex-col items-center w-full space-y-1">
-                {/* 1. DISPUTE STATE: Resolved but no winner (Draw/Conflict) */}
-                {contract.winner == null ? (
-                  <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
-                    <div className="flex items-center justify-center gap-2 text-amber-600">
-                      <ShieldAlert className="h-4 w-4" />
-                      <span className="text-sm font-bold uppercase tracking-widest">Disputed Result</span>
-                      <ShieldAlert className="h-4 w-4" />
-                    </div>
-                    <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-tight italic">
-                      Stakes Returned • No Victor Declared
-                    </p>
-                  </div>
-                ) : (
-                  /* 2. WINNER STATE: Standard Trophy View */
-                  <>
-                    <div className="flex items-center justify-center gap-2">
-                      <TrophyWinner 
-                        name={contract.winner === contract.maker.id ? contract.maker.username : contract.taker?.username} 
-                      />
-                    </div>
-                    <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-tight italic">
-                      Defeated: {contract.winner === contract.maker.id ? contract.taker?.username : contract.maker.username}
-                    </p>
-                  </>
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
+                <DialogTrigger asChild>
+                  <TooltipTrigger asChild>
+                    <Button
+                      className="w-full font-bold uppercase text-xs tracking-wider"
+                      variant={config.variant}
+                    >
+                      {contract.status === "resolved" ? (
+                        <div className="flex flex-col items-center w-full space-y-1">
+                          {contract.winner == null ? (
+                            <div className="flex items-center justify-center gap-2 text-amber-600 animate-in fade-in zoom-in duration-300">
+                              <ShieldAlert className="h-4 w-4" />
+                              <span className="text-sm font-bold uppercase tracking-widest">Disputed Result</span>
+                              <ShieldAlert className="h-4 w-4" />
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center gap-2">
+                              <TrophyWinner 
+                                name={contract.winner === contract.maker.id ? contract.maker.username : contract.taker?.username} 
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        config.label
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                </DialogTrigger>
+
+                {/* TOOLTIP CONTENT MOVED OUTSIDE THE BUTTON LOGIC */}
+                {contract.status === "resolved" && (
+                  <TooltipContent 
+                    side="top" 
+                    // p-3 adds the padding you requested
+                    className={`p-2.5 font-bold border-none shadow-xl ${
+                      contract.winner == null ? "bg-amber-600 text-white" : "bg-primary text-primary-foreground"
+                    }`}
+                  >
+                    {contract.winner == null ? (
+                      <p className="text-[10px] tracking-widest">STAKES RETURNED • NO VICTOR DECLARED</p>
+                    ) : (
+                      <p className="text-[10px] tracking-widest">
+                        DEFEATED: {contract.winner === contract.maker.id ? contract.taker?.username : contract.maker.username}
+                      </p>
+                    )}
+                  </TooltipContent>
                 )}
-              </div>
-            ) : (
-              /* Standard Button for Open/Active states */
-              <DialogTrigger asChild>
-                <Button
-                  className="w-full font-bold uppercase text-xs tracking-wider"
-                  variant={config.variant}
-                >
-                  {config.label}
-                </Button>
-              </DialogTrigger>
-            )}
+              </Tooltip>
+            </TooltipProvider>
           </CardFooter>
         </Card>
 

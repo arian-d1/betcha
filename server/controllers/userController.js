@@ -54,9 +54,29 @@ async function createContract(req, res) {
     if (contractAmount == null || Number.isNaN(amountNum)) {
       return res
         .status(400)
-        .json({ success: false, error: "contractAmount is required (number)" });
+        .json({ success: false, error: "contractAmount is required (number)" 
+      });
     }
 
+    // 1) ensure user exists + has enough balance
+    const user = await db.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const currentBalance = Number(user.balance ?? 0);
+    if (currentBalance < amountNum) {
+      return res.status(400).json({
+        success: false,
+        error: "Insufficient balance to create this contract",
+      });
+    }
+
+    // 2) deduct balance
+    const newBalance = currentBalance - amountNum;
+    await db.updateUser(userId, { balance: newBalance });
+
+    // 3) create contract
     const contract = {
       id: crypto.randomUUID(),
       maker: userId,
@@ -182,9 +202,53 @@ async function updateUsername(req, res) {
   }
 }
 
+async function updateBalance(req, res) {
+  try {
+    const { userId } = req.params;
+    const { balance } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "Missing userId" });
+    }
+
+    const nextBalance = Number(balance);
+    if (balance == null || Number.isNaN(nextBalance)) {
+      return res
+        .status(400)
+        .json({ success: false, error: "balance is required (number)" });
+    }
+
+    // MVP: allow 0+ only (change/remove if you want to allow negative)
+    if (nextBalance < 0) {
+      return res
+        .status(400)
+        .json({ success: false, error: "balance cannot be negative" });
+    }
+
+    const result = await db.updateUser(userId, { balance: nextBalance });
+    if (!result?.matchedCount) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const updatedUser = await db.getUser(userId);
+
+    return res.json({
+      success: true,
+      message: "Balance updated",
+      data: mapUser(updatedUser),
+    });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      error: e?.message || "Failed to update balance",
+    });
+  }
+}
+
 module.exports = {
   createContract,
   getUserProfile,
   getUserByEmail,
   updateUsername,
+  updateBalance,
 };

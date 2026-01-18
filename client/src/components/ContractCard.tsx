@@ -48,6 +48,24 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
   const isOwner = auth.user?.id === contract.maker.id;
   const isTrusted = contract.maker.times_banned == 0;
 
+  // Accept Wager Handler
+  // REQUIRE: User must have sufficient funds
+  // EFFECT: Accepting wager will set the currently logged in user as the taker
+  //         and change contract status to "active" to the backend/database.
+  const acceptWager = async (contractId: string, takingUserId: string) => {
+    try {
+      const response = await api.patch(`/contracts/${contractId}/claim`, {
+        claimingUserId: takingUserId
+      });
+      if (response.data.success) {
+        contract = response.data.data;
+        auth.user!.balance = response.data.balance;
+      }
+    } catch (e: any) {
+      console.error("Error accepting wager:", e.response?.data.error);
+    }
+  };
+
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent opening the dialog
     if (!confirm("Are you sure you want to delete this wager?")) return;
@@ -213,7 +231,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
                 // REQUIRE: User must have sufficient funds
                 // EFFECT: Accepting wager will set the currently logged in user as the taker
                 //       and change contract status to "active" to the backend/database.
-                onClick={() => {}}
+                onClick={() => acceptWager(contract.id, auth.user!.id)}
 
 
                 // Logic: Disabled if already disabled in config (e.g., user not logged in)

@@ -130,6 +130,7 @@ async function getUserByEmail(req, res) {
     });
   }
 }
+
 async function updateUsername(req, res) {
   try {
     const { userId } = req.params;
@@ -150,6 +151,15 @@ async function updateUsername(req, res) {
       return res
         .status(400)
         .json({ success: false, error: "username cannot be empty" });
+    }
+
+    // Check if username is already taken (by someone else)
+    const existing = await db.getUserByUsername(nextUsername);
+    if (existing && existing.uuid !== userId) {
+      return res.status(409).json({
+        success: false,
+        error: "username is already taken",
+      });
     }
 
     const result = await db.updateUser(userId, { username: nextUsername });

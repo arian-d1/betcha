@@ -143,10 +143,62 @@ async function claimContract(req, res) {
         .json({ success: false, error: "claimingUserId is required" });
     }
 
+    // 1) Get contract to know amount + validate state
+    const contract = await db.getContract(contractId);
+    if (!contract) {
+      return res.status(404).json({ success: false, error: "Contract not found" });
+    }
+    if (contract.status !== "open") {
+      return res.status(409).json({
+        success: false,
+        error: "Contract cannot be claimed (not open)",
+      });
+    }
+    if (contract.taker != null) {
+      return res.status(409).json({
+        success: false,
+        error: "Contract cannot be claimed (already claimed)",
+      });
+    }
+    if (contract.maker === claimingUserId) {
+      return res.status(400).json({
+        success: false,
+        error: "You cannot claim your own contract",
+      });
+    }
+
+    const amountNum = Number(contract.amount ?? 0);
+    if (Number.isNaN(amountNum) || amountNum <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Contract has invalid amount",
+      });
+    }
+
+    // 2) Ensure claimant has enough balance, then deduct
+    const claimant = await db.getUser(claimingUserId);
+    if (!claimant) {
+      return res.status(404).json({ success: false, error: "Claiming user not found" });
+    }
+
+    const currentBalance = Number(claimant.balance ?? 0);
+    if (currentBalance < amountNum) {
+      return res.status(400).json({
+        success: false,
+        error: "Insufficient balance to accept this wager",
+      });
+    }
+
+    const newBalance = currentBalance - amountNum;
+    await db.updateUser(claimingUserId, { balance: newBalance });
+
+    // 3) Claim the contract (sets taker + status)
     const result = await db.claimContract(contractId, claimingUserId);
     const updated = result?.value ?? null;
 
+    // If claim failed (race condition), refund the user (best-effort)
     if (!updated) {
+      await db.updateUser(claimingUserId, { balance: currentBalance });
       return res.status(409).json({
         success: false,
         error:
@@ -158,6 +210,7 @@ async function claimContract(req, res) {
       success: true,
       message: "Contract claimed",
       data: mapContract(updated),
+      balance: newBalance,
     });
   } catch (e) {
     return res.status(500).json({
@@ -167,9 +220,70 @@ async function claimContract(req, res) {
   }
 }
 
+async function cancelContract(req, res) {
+  try {
+    const { contractId } = req.params;
+    const { userId } = req.body; // MVP: who is cancelling
+
+    if (!contractId) {
+      return res.status(400).json({ success: false, error: "Missing contractId" });
+    }
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "userId is required" });
+    }
+
+    const contract = await db.getContract(contractId);
+    if (!contract) {
+      return res.status(404).json({ success: false, error: "Contract not found" });
+    }
+
+    // MVP sanity checks
+    if (contract.maker !== userId) {
+      return res.status(403).json({ success: false, error: "Only maker can cancel" });
+    }
+    if (contract.status !== "open") {
+      return res.status(409).json({ success: false, error: "Contract cannot be cancelled" });
+    }
+    if (contract.taker != null) {
+      return res.status(409).json({ success: false, error: "Claimed contract cannot be cancelled" });
+    }
+
+    const amountNum = Number(contract.amount ?? 0);
+
+    // 1) mark cancelled
+    await db.updateContract(contractId, { status: "cancelled" });
+
+    // 2) refund maker balance
+    const user = await db.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const refundedBalance = Number(user.balance ?? 0) + amountNum;
+    await db.updateUser(userId, { balance: refundedBalance });
+
+    const updatedContract = await db.getContract(contractId);
+
+    return res.json({
+      success: true,
+      message: "Contract cancelled",
+      data: {
+        contract: mapContract(updatedContract),
+        balance: refundedBalance,
+      },
+    });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      error: e?.message || "Failed to cancel contract",
+    });
+  }
+}
+
 module.exports = {
   getPublicContracts,
   getContractById,
   getContractsByUser,
   claimContract,
+  cancelContract
 };

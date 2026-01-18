@@ -19,7 +19,9 @@ function getPublicContracts(req, res) {
     const limitNum = Number(limit);
 
     if (Number.isNaN(pageNum) || pageNum < 1) {
-      return res.status(400).json({ success: false, error: "page must be >= 1" });
+      return res
+        .status(400)
+        .json({ success: false, error: "page must be >= 1" });
     }
     if (Number.isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
       return res
@@ -50,7 +52,9 @@ function getContractById(req, res) {
     const { contractId } = req.params;
 
     if (!contractId) {
-      return res.status(400).json({ success: false, error: "Missing contractId" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing contractId" });
     }
 
     // TODO: Database logic goes here
@@ -97,7 +101,9 @@ function claimContract(req, res) {
     const { claimingUserId } = req.body;
 
     if (!contractId) {
-      return res.status(400).json({ success: false, error: "Missing contractId" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing contractId" });
     }
     if (!claimingUserId) {
       return res
@@ -106,7 +112,7 @@ function claimContract(req, res) {
     }
 
     // TODO: Database logic goes here (ensure contract is public/unclaimed, etc.)
-    
+
     return res.json({
       success: true,
       message: `Contract ${contractId} has been claimed`,
@@ -123,7 +129,7 @@ function claimContract(req, res) {
 
 module.exports = {
   getPublicContracts,
-  getContractById, 
+  getContractById,
   getContractsByUser,
   claimContract,
 };

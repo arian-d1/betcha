@@ -1,4 +1,4 @@
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN;
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "*";
 
 const express = require("express");
 const session = require("express-session");
@@ -6,6 +6,7 @@ const cors = require("cors");
 
 const contractRouter = require("./routes/contractRouter.js");
 const userRouter = require("./routes/userRouter.js");
+const testRouter = require("./routes/testRouter.js");
 
 const app = express();
 
@@ -25,7 +26,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/contracts", contractRouter);
-app.use("/", userRouter);
+app.use("/user", userRouter);
+app.use("/", testRouter);
 
 const PORT = process.env.PORT || 3000;
 

@@ -26,9 +26,10 @@ function createContract(req, res) {
         .json({ success: false, error: "contractTitle is required (string)" });
     }
     if (!contractDescription || typeof contractDescription !== "string") {
-      return res
-        .status(400)
-        .json({ success: false, error: "contractDescription is required (string)" });
+      return res.status(400).json({
+        success: false,
+        error: "contractDescription is required (string)",
+      });
     }
     if (contractAmount == null || Number.isNaN(Number(contractAmount))) {
       return res
@@ -42,7 +43,11 @@ function createContract(req, res) {
       success: true,
       message: "New contract created",
       creatorId: userId,
-      data: { contractTitle, contractDescription, contractAmount: Number(contractAmount) },
+      data: {
+        contractTitle,
+        contractDescription,
+        contractAmount: Number(contractAmount),
+      },
     });
   } catch (e) {
     return res.status(500).json({
@@ -59,7 +64,7 @@ function getUserProfile(req, res) {
     if (!userId) {
       return res.status(400).json({ success: false, error: "Missing userId" });
     }
-    
+
     // const user = {
     //   id: userId,
     //   username: "placeholder_username",
@@ -79,6 +84,41 @@ function getUserProfile(req, res) {
     return res.status(500).json({
       success: false,
       error: e?.message || "Failed to fetch user profile",
+    });
+  }
+}
+
+function getUserByEmail(req, res) {
+  try {
+    const { email } = req.query;
+
+    if (!email || typeof email !== "string") {
+      return res
+        .status(400)
+        .json({ success: false, error: "email query param is required" });
+    }
+
+    // const updatedUser = {
+    //   id: userId,
+    //   username: "placeholder_username",
+    //   fname: "First",
+    //   lname: "Last",
+    //   email: "user@example.com",
+    //   created_at: new Date().toISOString(),
+    //   balance: 0,
+    //   times_banned: 0,
+    // };
+
+    // TODO: Replace with DB lookup by email
+    // TODO: const user = ...;
+
+    if (!user) return res.status(404).json({ success: false, error: "User not found" });
+
+    return res.json({ success: true, data: user });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      error: e?.message || "Failed to fetch user by email",
     });
   }
 }
@@ -106,7 +146,10 @@ function updateUserProfile(req, res) {
     }
 
     // Basic validation
-    if (updates.username !== undefined && typeof updates.username !== "string") {
+    if (
+      updates.username !== undefined &&
+      typeof updates.username !== "string"
+    ) {
       return res
         .status(400)
         .json({ success: false, error: "username must be a string" });
@@ -157,5 +200,6 @@ function updateUserProfile(req, res) {
 module.exports = {
   createContract,
   getUserProfile,
+  getUserByEmail,
   updateUserProfile,
 };

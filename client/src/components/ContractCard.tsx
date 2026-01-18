@@ -27,6 +27,7 @@ import { UserContext } from "./contexts/UserContext";
 import api from "@/api/axios";
 import { Tooltip, TooltipProvider } from "./ui/tooltip";
 import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
+import { BiddingForm } from "./BiddingForm";
 
 
 export default function ContractCard({ contract, onDelete }: { contract: Contract, onDelete?: (id: string) => void }) {
@@ -53,6 +54,8 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isOwner = auth.user?.id == contract.maker.id;
   const isTrusted = contract.maker.times_banned == 0;
+  const [isNegotiating, setIsNegotiating] = useState(false);
+  const [proposedPrice, setProposedPrice] = useState<string>(contract.amount.toString());
 
   const hasUserClaimed = isOwner 
     ? contract.maker_claim !== null 
@@ -129,6 +132,40 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
     }
   };
 
+  const handleProposeRaise = async () => {
+    const newAmount = Number(proposedPrice);
+
+    // Validation
+    if (isNaN(newAmount) || newAmount <= contract.amount) {
+      setError(`Proposal must be greater than $${contract.amount.toFixed(2)}`);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      // Following your Notification interface and PUT route
+      const response = await api.put("/notification", {
+        from_uid: auth.user?.id,      // The person negotiating (taker/visitor)
+        to_uid: contract.maker.id,    // The contract owner
+        contract_id: contract.id,
+        amount: newAmount,
+        status: "pending"             // Default status
+      });
+
+      if (response.data.success) {
+        setIsNegotiating(false);
+        // Optional: Show a success toast or message
+        alert("Proposal sent successfully!");
+      }
+    } catch (e: any) {
+      const msg = e.response?.data.error || "Failed to send proposal";
+      setError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   return (
     <Dialog>
       {/* The Trigger is the card itself */}
@@ -254,15 +291,27 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
 
       {/* The Expanded View (Modal) */}
       <DialogContent className="sm:max-w-[525px] border-none shadow-2xl">
-        <DialogHeader className="border-b pb-4">
-          <div className="flex items-center text-sm font-bold text-green-600 mb-2">
-            <Coins className="mr-1.5 h-4 w-4" />
-            ${contract.amount.toFixed(2)}
-          </div>
-          <DialogTitle className="text-2xl font-bold leading-tight">
-            {contract.title}
-          </DialogTitle>
-        </DialogHeader>
+        {isNegotiating ? (
+          <BiddingForm
+            currentAmount={contract.amount}
+            proposedPrice={proposedPrice}
+            setProposedPrice={setProposedPrice}
+            onBack={() => setIsNegotiating(false)}
+            onSubmit={handleProposeRaise}
+            isSubmitting={isSubmitting}
+            error={error}
+          />
+        ) : (
+          <>
+            <DialogHeader className="border-b pb-4">
+              <div className="flex items-center text-sm font-bold text-green-600 mb-2">
+                <Coins className="mr-1.5 h-4 w-4" />
+                ${contract.amount.toFixed(2)}
+              </div>
+              <DialogTitle className="text-2xl font-bold leading-tight">
+                {contract.title}
+              </DialogTitle>
+            </DialogHeader>
 
         <div className="py-6">
           {/* Full description - no line-clamp here */}
@@ -304,10 +353,22 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
               <p className="font-medium">{error}</p>
             </div>
           )}
+
         </div>
 
         <DialogFooter className="flex flex-row items-center justify-between gap-3 border-t pt-6">
           {/* LEFT SIDE: WIN/LOSE BUTTONS */}
+          
+          {contract.status === "open" && !isOwner && auth.isAuthenticated && !isNegotiating && (
+            <Button 
+              variant="outline" 
+              className="border-primary text-primary hover:bg-primary/5 font-bold uppercase text-[10px] tracking-widest h-10 px-4"
+              onClick={() => setIsNegotiating(true)}
+            >
+              Negotiate
+            </Button>
+          )}
+
           {contract.status === "active" && (isOwner || auth.user?.id === contract.taker?.id) && (
             <div className="flex flex-col items-start gap-2 mr-auto">
               {hasUserClaimed ? (
@@ -336,31 +397,32 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
                   </Button>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* RIGHT SIDE: CANCEL/CLOSE BUTTONS */}
-          <div className="flex flex-row gap-3 ml-auto">
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex-1 sm:flex-none px-8">
-                {contract.status === "open" ? "Cancel" : "Close"}
-              </Button>
-            </DialogTrigger>
-            
-            {contract.status === "open" && (
-              <Button 
-                className="flex-1 sm:flex-none px-8 bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 disabled:bg-muted disabled:text-muted-foreground"
-                onClick={() => {
-                  auth.user != null ? acceptWager(contract.id, auth.user.id) : setError("Couldnt go through")
-                }}
-                disabled={config.isDisabled || isSubmitting}
-              >
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                {auth.isAuthenticated ? "Accept Wager" : "Login to Accept"}
-              </Button>
+              </div>
             )}
-          </div>
-        </DialogFooter>
+
+            {/* RIGHT SIDE: CANCEL/CLOSE BUTTONS */}
+            <div className="flex flex-row gap-3 ml-auto">
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex-1 sm:flex-none px-8">
+                  {contract.status === "open" ? "Cancel" : "Close"}
+                </Button>
+              </DialogTrigger>
+              
+              {contract.status === "open" && (
+                <Button 
+                  className="flex-1 sm:flex-none px-8 bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 disabled:bg-muted disabled:text-muted-foreground"
+                  onClick={() => {
+                    auth.user != null ? acceptWager(contract.id, auth.user.id) : setError("Couldnt go through")
+                  }}
+                  disabled={config.isDisabled || isSubmitting}
+                >
+                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  {auth.isAuthenticated ? "Accept Wager" : "Login to Accept"}
+                </Button>
+              )}
+            </div>
+          </DialogFooter>
+        </>)}
       </DialogContent>
     </Dialog>
   );

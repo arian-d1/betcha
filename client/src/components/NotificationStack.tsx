@@ -39,7 +39,7 @@ export function NotificationStack({ notifications, onAction }: {
             </div>
           ) : (
             notifications.map((n) => (
-              <div key={n.n_id} className="p-4 border-b last:border-0 hover:bg-muted/50 transition-colors">
+              <div key={n.id} className="p-4 border-b last:border-0 hover:bg-muted/50 transition-colors">
                 <p className="text-xs font-medium mb-1 line-clamp-1">
                   Raise offer for: <span className="font-bold">{n.contract_title}</span>
                 </p>

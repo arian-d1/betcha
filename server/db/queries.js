@@ -5,6 +5,7 @@ const client = new MongoClient(process.env.MONGODB_URI);
 const dbName = "main";
 const usersCollectionName = "users";
 const contractsCollectionName = "contracts";
+const notificationsCollectionName = "notifications";
 
 // Get users collection
 async function getUsersCollection() {

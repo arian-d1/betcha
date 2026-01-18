@@ -222,7 +222,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                className="h-5 w-5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                 onClick={handleDelete}
                 disabled={isDeleting}
               >

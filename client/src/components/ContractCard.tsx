@@ -12,6 +12,8 @@ import type { Contract } from "@/types/Contract";
 import type { ContractStatus } from "@/types/ContractStatus";
 import { Coins, User2, ShieldCheck, ShieldAlert } from "lucide-react";
 
+import { TrophyWinner } from "./ui/TrophyWinner";
+
 const STATUS_CONFIG: Record<
   ContractStatus,
   {
@@ -63,15 +65,13 @@ export default function ContractCard({ contract }: { contract: Contract }) {
                 @{contract.maker.username}
               </p>
               {isTrusted ? (
-                <ShieldCheck
-                  className="h-3.5 w-3.5 text-blue-500"
-                  title="Trusted Player"
-                />
+                <ShieldCheck className="h-3.5 w-3.5 text-blue-500">
+                <title>Verified Maker</title>
+              </ShieldCheck>
               ) : (
-                <ShieldAlert
-                  className="h-3.5 w-3.5 text-yellow-600"
-                  title="Previously Banned"
-                />
+                <ShieldAlert className="h-3.5 w-3.5 text-yellow-600">
+                  <title>Previously Banned</title>
+                </ShieldAlert>
               )}
             </div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
@@ -83,14 +83,29 @@ export default function ContractCard({ contract }: { contract: Contract }) {
         </div>
       </CardContent>
 
-      <CardFooter className="border-t bg-muted/10 h-16 flex items-center justify-center shrink-0 px-4">
-        <Button
-          className="w-full font-bold uppercase text-xs tracking-wider"
-          variant={config.variant}
-          disabled={config.isDisabled}
-        >
-          {config.label}
-        </Button>
+      <CardFooter className="border-t bg-muted/10 h-20 flex items-center justify-center shrink-0 px-4">
+        {contract.status === "resolved" ? (
+          <div className="flex flex-col items-center w-full space-y-1">
+            {/* Winner Section */}
+            <div className="flex items-center justify-center gap-2">
+              <TrophyWinner name={contract.winner === contract.maker.id ? contract.maker.username : contract.taker?.username} />
+            </div>
+
+            {/* Loser Section - De-emphasized */}
+              <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-tight italic">
+                Defeated: {contract.winner === contract.maker.id ? contract.taker?.username : contract.maker.username}
+              </p>
+            </div>
+        ) : (
+          /* Standard Button for all other states */
+          <Button
+            className="w-full font-bold uppercase text-xs tracking-wider"
+            variant={config.variant}
+            disabled={config.isDisabled}
+          >
+            {config.label}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

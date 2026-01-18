@@ -9,6 +9,7 @@ const contractRouter = require("./routes/contractRouter.js");
 const userRouter = require("./routes/userRouter.js");
 const testRouter = require("./routes/testRouter.js");
 const authRouter = require("./routes/authRouter");
+const notificationRouter = require("./routes/notificationRouter");
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/contracts", contractRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
+app.use("/notification", notificationRouter);
 app.use("/", testRouter);
 
 const PORT = process.env.PORT || 3000;

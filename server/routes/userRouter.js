@@ -10,6 +10,6 @@ userRouter.post("/:userId/newcontract", userController.createContract);
 userRouter.get("/:userId", userController.getUserProfile);
 
 // Edit profile (partial updates)
-userRouter.patch("/:userId", userController.updateUserProfile);
+userRouter.patch("/:userId", userController.updateUsername);
 
 module.exports = userRouter;

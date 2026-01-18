@@ -130,47 +130,29 @@ async function getUserByEmail(req, res) {
     });
   }
 }
-
-async function updateUserProfile(req, res) {
+async function updateUsername(req, res) {
   try {
     const { userId } = req.params;
+    const { username } = req.body;
 
     if (!userId) {
       return res.status(400).json({ success: false, error: "Missing userId" });
     }
 
-    // API fields allowed
-    const allowedFields = ["username", "fname", "lname", "email"];
-    const updates = {};
-
-    for (const key of allowedFields) {
-      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    if (typeof username !== "string") {
+      return res
+        .status(400)
+        .json({ success: false, error: "username is required (string)" });
     }
 
-    if (Object.keys(updates).length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: `No valid fields to update. Allowed: ${allowedFields.join(", ")}`,
-      });
+    const nextUsername = username.trim();
+    if (!nextUsername) {
+      return res
+        .status(400)
+        .json({ success: false, error: "username cannot be empty" });
     }
 
-    // Validate
-    for (const [k, v] of Object.entries(updates)) {
-      if (typeof v !== "string") {
-        return res
-          .status(400)
-          .json({ success: false, error: `${k} must be a string` });
-      }
-    }
-
-    // Map API -> DB
-    const dbUpdates = {};
-    if (updates.username !== undefined) dbUpdates.username = updates.username;
-    if (updates.fname !== undefined) dbUpdates.firstName = updates.fname;
-    if (updates.lname !== undefined) dbUpdates.lastName = updates.lname;
-    if (updates.email !== undefined) dbUpdates.email = updates.email;
-
-    const result = await db.updateUser(userId, dbUpdates);
+    const result = await db.updateUser(userId, { username: nextUsername });
     if (!result?.matchedCount) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
@@ -179,13 +161,13 @@ async function updateUserProfile(req, res) {
 
     return res.json({
       success: true,
-      message: "Profile updated",
+      message: "Username updated",
       data: mapUser(updatedUser),
     });
   } catch (e) {
     return res.status(500).json({
       success: false,
-      error: e?.message || "Failed to update user profile",
+      error: e?.message || "Failed to update username",
     });
   }
 }
@@ -194,5 +176,5 @@ module.exports = {
   createContract,
   getUserProfile,
   getUserByEmail,
-  updateUserProfile,
+  updateUsername,
 };

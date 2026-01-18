@@ -1,7 +1,7 @@
 // components/Navbar.tsx
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User2, Wallet } from "lucide-react";
+import { User2, Wallet, Swords } from "lucide-react";
 import { useContext } from "react";
 import { UserContext } from "./contexts/UserContext";
 import Logo from "../assets/vector/default-monochrome-black.svg";
@@ -10,10 +10,25 @@ export function Navbar() {
   const auth = useContext(UserContext);
   return (
     <nav className="border-b bg-card px-6 py-3 flex items-center justify-between sticky top-0 z-50">
-      <Link to="/contracts" className="text-xl font-bold tracking-tighter">
-        <img src={Logo} alt="Betcha!" className="h-8 w-auto" />
-      </Link>
+      {/* Left side: Logo + Arena */}
+      <div className="flex items-center gap-6">
+        <Link to="/contracts" className="text-xl font-bold tracking-tighter">
+          <img src={Logo} alt="Betcha!" className="h-8 w-auto" />
+        </Link>
 
+        <Link to="/contracts">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="gap-2 font-bold tracking-wide uppercase text-lg leading-none border border-transparent transition-colors hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary))]"
+          >
+            <Swords className="h-5 w-5" />
+            Arena
+          </Button>
+        </Link>
+      </div>
+
+      {/* Right side: Balance + Profile */}
       <div className="flex items-center gap-6">
         <div className="hidden md:flex items-center gap-2 text-sm font-medium text-muted-foreground">
           {auth.isAuthenticated ? (

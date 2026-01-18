@@ -52,6 +52,19 @@ async function createContract(req, res) {
         error: "contractDescription is required (string)",
       });
     }
+    if (profanityFilter.isProfane(contractTitle)) {
+      return res.status(400).json({
+        success: false,
+        error: "Contract title contains blocked language",
+      }); 
+    }
+    if (profanityFilter.isProfane(description)) {
+      return res.status(400).json({
+        success: false,
+        error: "Contract description contains blocked language",
+      }); profanityFilter.isProfane(description)
+    }
+
     const amountNum = Number(contractAmount);
     if (contractAmount == null || Number.isNaN(amountNum)) {
       return res

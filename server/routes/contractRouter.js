@@ -17,4 +17,7 @@ contractRouter.patch("/:contractId/claim", contractController.claimContract);
 // PATCH /contracts/:contractId/cancel - Cancel a contract (refund maker)
 contractRouter.patch("/:contractId/cancel", contractController.cancelContract);
 
+// PATCH /contracts/:contractId/resolve - Submit win/lose claim + auto-resolve
+contractRouter.patch("/:contractId/resolve", contractController.resolveContract);
+
 module.exports = contractRouter;

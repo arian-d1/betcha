@@ -25,6 +25,9 @@ function mapContract(c) {
     winner: c.winner ?? null,
     created_at:
       c.created_at instanceof Date ? c.created_at.toISOString() : c.created_at,
+
+    maker_claim: c.makerClaim ?? null,
+    taker_claim: c.takerClaim ?? null,
   };
 }
 
@@ -279,10 +282,109 @@ async function cancelContract(req, res) {
   }
 }
 
+async function resolveContract(req, res) {
+  try {
+    const { contractId } = req.params;
+    const { userId, claim } = req.body;
+
+    if (!contractId) {
+      return res.status(400).json({ success: false, error: "Missing contractId" });
+    }
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "userId is required" });
+    }
+    if (typeof claim !== "boolean") {
+      return res.status(400).json({ success: false, error: "claim must be boolean" });
+    }
+
+    const contract = await db.getContract(contractId);
+    if (!contract) {
+      return res.status(404).json({ success: false, error: "Contract not found" });
+    }
+
+    // MVP: only allow resolution when active + has taker
+    if (contract.status !== "active") {
+      return res.status(409).json({ success: false, error: "Contract is not active" });
+    }
+    if (!contract.taker) {
+      return res.status(409).json({ success: false, error: "Contract has no taker" });
+    }
+
+    // Must be maker or taker
+    const isMaker = contract.maker === userId;
+    const isTaker = contract.taker === userId;
+    if (!isMaker && !isTaker) {
+      return res.status(403).json({ success: false, error: "Not a participant" });
+    }
+
+    // Save claim
+    await db.updateContract(contractId, isMaker ? { makerClaim: claim } : { takerClaim: claim });
+
+    // Re-fetch to evaluate outcome
+    const updated = await db.getContract(contractId);
+
+    // Not both claimed yet
+    if (updated.makerClaim == null || updated.takerClaim == null) {
+      return res.json({
+        success: true,
+        message: "Claim recorded",
+        data: mapContract(updated),
+      });
+    }
+
+    // Both claimed: determine winner if they agree
+    let winnerId = null;
+    if (updated.makerClaim === true && updated.takerClaim === false) winnerId = updated.maker;
+    if (updated.makerClaim === false && updated.takerClaim === true) winnerId = updated.taker;
+
+    // Dispute case (both true or both false)
+    if (!winnerId) {
+      await db.updateContract(contractId, { status: "disputed" });
+      const disputed = await db.getContract(contractId);
+
+      return res.json({
+        success: true,
+        message: "Claims conflict — contract disputed",
+        data: mapContract(disputed),
+      });
+    }
+
+    // Payout winner (both sides escrowed amount already => payout = 2x amount)
+    const amountNum = Number(updated.amount ?? 0);
+    const payout = amountNum * 2;
+
+    const winnerUser = await db.getUser(winnerId);
+    if (winnerUser) {
+      const nextBalance = Number(winnerUser.balance ?? 0) + payout;
+      await db.updateUser(winnerId, { balance: nextBalance });
+    }
+
+    await db.updateContract(contractId, {
+      status: "resolved",
+      winner: winnerId,
+      resolved_at: new Date(),
+    });
+
+    const resolved = await db.getContract(contractId);
+
+    return res.json({
+      success: true,
+      message: "Contract resolved",
+      data: mapContract(resolved),
+    });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      error: e?.message || "Failed to resolve contract",
+    });
+  }
+}
+
 module.exports = {
   getPublicContracts,
   getContractById,
   getContractsByUser,
   claimContract,
-  cancelContract
+  cancelContract,
+  resolveContract,
 };

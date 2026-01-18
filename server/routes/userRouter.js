@@ -12,4 +12,6 @@ userRouter.get("/:userId", userController.getUserProfile);
 // Edit profile (partial updates)
 userRouter.patch("/:userId", userController.updateUsername);
 
+userRouter.patch("/setBalance/:userId", userController.updateBalance);
+
 module.exports = userRouter;

@@ -11,6 +11,7 @@ import LoginPage from "./components/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserProfile from "./components/UserProfile";
 import { UserProvider } from "./components/contexts/UserContext";
+import About from "./components/About";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="*" element={<Navigate to="/login" replace />} />
           <Route path="/" element={<Navigate to="/contracts" replace />} />
+          <Route path="/about" element={<About></About>}/>
           <Route
             path="/login"
             element={<LoginPage />}

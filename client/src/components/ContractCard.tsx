@@ -223,6 +223,18 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
              </div>
           </div>
 
+          <div className="mt-3 p-4 rounded-xl bg-muted/50 border flex items-center gap-4">
+             <Avatar className="h-12 w-12 border-2 border-background">
+               <AvatarFallback><User2 /></AvatarFallback>
+             </Avatar>
+             <div>
+               <p className="text-sm font-bold">Taker: @{contract.taker == null ? "Unassigned" : contract.taker.username}</p>
+               <p className="text-xs text-muted-foreground">
+                 {isTrusted ? "Verified Maker" : `${contract.taker?.times_banned} violations reported`}
+               </p>
+             </div>
+          </div>
+
           {/* ERROR ALERT SECTION */}
           {error && (
             <div className="mt-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-1">

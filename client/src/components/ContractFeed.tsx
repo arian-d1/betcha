@@ -7,6 +7,7 @@ import CreateContractModal from "./CreateContractModal";
 import { UserContext } from "./contexts/UserContext";
 import api from "@/api/axios";
 import { Loader2 } from "lucide-react";
+import ChatWidget from "./ChatWidget";
 
 export default function ContractFeed() {
   const [contracts, setContracts] = useState<Array<Contract>>([]);
@@ -118,6 +119,7 @@ export default function ContractFeed() {
           )}
         </div>
       )}
+      <ChatWidget />
     </div>
   );
 }

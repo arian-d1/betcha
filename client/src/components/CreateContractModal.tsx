@@ -15,11 +15,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, Coins, Loader2 } from "lucide-react";
 import { UserContext } from "./contexts/UserContext";
+import api from "@/api/axios";
 
 export default function CreateContractModal({ onContractCreated, isDisabled }: { onContractCreated: (newContract: any) => void, isDisabled: boolean }) {
   const { user } = useContext(UserContext);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
   // Form State
   const [title, setTitle] = useState("");
@@ -28,31 +30,34 @@ export default function CreateContractModal({ onContractCreated, isDisabled }: {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user?.id) return;
     setLoading(true);
-
-    // In a real app, you would send this to your API
-    const newContract = {
-      id: Math.random().toString(36).substr(2, 9), // Temporary ID
-      maker: user,
-      taker: null,
-      winner: "",
-      title,
-      description,
-      amount: parseFloat(amount),
-      status: "open",
-      created_at: new Date().toISOString(),
-    };
-
-    // Simulate API delay
-    setTimeout(() => {
-      onContractCreated(newContract);
+    setError("")
+    try {
+        const response = await api.post(`/user/${user.id}/newcontract`, {
+            contractTitle: title,
+            contractDescription: description,
+            contractAmount: parseFloat(amount),
+        });
+        if (response.data.success) {
+            // The backend returns the new contract in response.data.data
+            const createdContract = response.data.data;
+            
+            // Pass the new contract back to the feed to update UI
+            onContractCreated(createdContract);
+            
+            // Close and reset
+            setOpen(false);
+            setTitle("");
+            setDescription("");
+            setAmount(""); 
+        } 
+    } catch (err: any) {
+      console.error("Failed to create contract:", err);
+      setError(err.response?.data?.error || "Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
-      setOpen(false);
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setAmount("");
-    }, 800);
+    }
   };
 
   return (
@@ -69,7 +74,13 @@ export default function CreateContractModal({ onContractCreated, isDisabled }: {
             Define the terms of your challenge. Others will be able to see and accept this in the Arena.
           </DialogDescription>
         </DialogHeader>
-
+        
+        {error && (
+            <div className="p-3 rounded-md bg-destructive/15 border border-destructive/20 text-destructive text-sm font-medium animate-in fade-in zoom-in duration-200">
+                {error}
+            </div> 
+        )}  
+        
         <form onSubmit={handleSubmit} className="space-y-6 pt-4">
           <div className="space-y-2">
             <Label htmlFor="title">Contract Title</Label>

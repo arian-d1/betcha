@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge"; // Ensure you've added the badge component
+
 import type { Contract } from "@/types/Contract";
 import type { ContractStatus } from "@/types/ContractStatus";
 import { Coins, User2, ShieldCheck, ShieldAlert } from "lucide-react";

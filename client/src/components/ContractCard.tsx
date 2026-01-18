@@ -57,6 +57,44 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
   const [isNegotiating, setIsNegotiating] = useState(false);
   const [proposedPrice, setProposedPrice] = useState<string>(contract.amount.toString());
 
+
+  const TRUST_MAP: Record<number, { label: string; icon: any; color: string; textColor: string }> = {
+    0: { 
+      label: "Verified Maker", 
+      icon: ShieldCheck, 
+      color: "text-blue-500", 
+      textColor: "text-blue-600" 
+    },
+    1: { 
+      label: "Minor Violation", 
+      icon: ShieldAlert, 
+      color: "text-yellow-600", 
+      textColor: "text-yellow-700" 
+    },
+    2: { 
+      label: "High Risk: Multiple Violations", 
+      icon: ShieldAlert, 
+      color: "text-destructive", 
+      textColor: "text-destructive" 
+    },
+  };
+
+  const TrustBadge = ({ user }: { user: any }) => {
+    if (!user) return null;
+    const level = getTrustLevel(user.times_banned || 0);
+    const Icon = level.icon;
+    return (
+      <div className="flex items-center gap-1">
+        <Icon className={`h-3.5 w-3.5 ${level.color}`} />
+        <span className={`text-[11px] font-semibold uppercase tracking-tight ${level.textColor}`}>
+          {level.label}
+        </span>
+      </div>
+    );
+  };
+
+  const getTrustLevel = (bans: number) => TRUST_MAP[Math.min(bans, 2)];
+
   const hasUserClaimed = isOwner 
     ? contract.maker_claim !== null 
     : auth.user?.id === contract.taker?.id 
@@ -196,43 +234,18 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
               </Button>
             )}
           </CardHeader>
-
           <CardContent className="pt-6 flex-1">
-            <CardTitle className="text-lg mb-2 truncate" title={contract.title}>
-              {contract.title}
-            </CardTitle>
+            <CardTitle className="text-lg mb-2 truncate">{contract.title}</CardTitle>
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-6 h-[2.5rem] leading-relaxed">{contract.description}</p>
 
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-6 h-[2.5rem] leading-relaxed">
-              {contract.description}
-            </p>
-
-            {/* User Identity Section */}
+            {/* CARD USER SECTION */}
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-muted/30 border border-transparent hover:border-muted-foreground/10 transition-colors">
               <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-background">
-                  <User2 className="h-4 w-4 text-muted-foreground" />
-                </AvatarFallback>
+                <AvatarFallback className="bg-background"><User2 className="h-4 w-4 text-muted-foreground" /></AvatarFallback>
               </Avatar>
               <div className="flex-1 overflow-hidden">
-                <div className="flex items-center gap-1.5">
-                  <p className="font-bold text-sm truncate">
-                    @{contract.maker.username}
-                  </p>
-                  {isTrusted ? (
-                    <ShieldCheck className="h-3.5 w-3.5 text-blue-500">
-                    <title>Verified Maker</title>
-                  </ShieldCheck>
-                  ) : (
-                    <ShieldAlert className="h-3.5 w-3.5 text-yellow-600">
-                      <title>Previously Banned</title>
-                    </ShieldAlert>
-                  )}
-                </div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
-                  {isTrusted
-                    ? "Verified Maker"
-                    : `${contract.maker.times_banned} violations`}
-                </p>
+                <p className="font-bold text-sm truncate">@{contract.maker.username}</p>
+                <TrustBadge user={contract.maker} />
               </div>
             </div>
           </CardContent>
@@ -317,36 +330,29 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
             </DialogHeader>
 
         <div className="py-6">
-          {/* Full description - no line-clamp here */}
-          <h4 className="text-xs uppercase font-semibold text-muted-foreground tracking-wider mb-2">
-            Contract Details
-          </h4>
-          <p className="text-base text-foreground leading-relaxed whitespace-pre-wrap">
-            {contract.description}
-          </p>
+          <h4 className="text-xs uppercase font-semibold text-muted-foreground tracking-wider mb-2">Contract Details</h4>
+          <p className="text-base text-foreground leading-relaxed whitespace-pre-wrap">{contract.description}</p>
 
+          {/* MODAL MAKER SECTION */}
           <div className="mt-8 p-4 rounded-xl bg-muted/50 border flex items-center gap-4">
-             <Avatar className="h-12 w-12 border-2 border-background">
-               <AvatarFallback><User2 /></AvatarFallback>
-             </Avatar>
-             <div>
-               <p className="text-sm font-bold">Created by @{contract.maker.username}</p>
-               <p className="text-xs text-muted-foreground">
-                 {isTrusted ? "Verified Maker" : `${contract.maker.times_banned} violations reported`}
-               </p>
-             </div>
+              <Avatar className="h-12 w-12 border-2 border-background">
+                <AvatarFallback><User2 /></AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm font-bold">Created by @{contract.maker.username}</p>
+                <TrustBadge user={contract.maker} />
+              </div>
           </div>
 
+          {/* MODAL TAKER SECTION */}
           <div className="mt-3 p-4 rounded-xl bg-muted/50 border flex items-center gap-4">
-             <Avatar className="h-12 w-12 border-2 border-background">
-               <AvatarFallback><User2 /></AvatarFallback>
-             </Avatar>
-             <div>
-               <p className="text-sm font-bold">Taker: {contract.taker == null ? "None yet" : `@${contract.taker.username}`}</p>
-               <p className="text-xs text-muted-foreground">
-                 {contract.taker? isTrusted ? "Verified Maker" : `${contract.taker?.times_banned} violations reported` : null}
-               </p>
-             </div>
+              <Avatar className="h-12 w-12 border-2 border-background">
+                <AvatarFallback><User2 /></AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm font-bold">Taker: {contract.taker == null ? "None yet" : `@${contract.taker.username}`}</p>
+                {contract.taker && <TrustBadge user={contract.taker} />}
+              </div>
           </div>
 
           {/* ERROR ALERT SECTION */}

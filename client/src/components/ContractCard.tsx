@@ -22,30 +22,33 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useContext } from "react";
+import { UserContext } from "./contexts/UserContext";
 
-const STATUS_CONFIG: Record<
-  ContractStatus,
-  {
-    label: string;
-    variant: "default" | "secondary" | "outline" | "ghost";
-    isDisabled: boolean;
-  }
-> = {
-  open: { label: "Accept Wager", variant: "default", isDisabled: false },
-  active: { label: "In Progress", variant: "secondary", isDisabled: true },
-  resolved: { label: "View Result", variant: "outline", isDisabled: false },
-  cancelled: { label: "Voided", variant: "ghost", isDisabled: true },
-};
 
 export default function ContractCard({ contract }: { contract: Contract }) {
+  const auth = useContext(UserContext);
+  const STATUS_CONFIG: Record<
+    ContractStatus,
+    {
+      label: string;
+      variant: "default" | "secondary" | "outline" | "ghost";
+      isDisabled: boolean;
+    }
+  > = {
+    open: { label: "Accept Wager", variant: "default", isDisabled: !auth.isAuthenticated },
+    active: { label: "In Progress", variant: "secondary", isDisabled: true },
+    resolved: { label: "View Result", variant: "outline", isDisabled: false },
+    cancelled: { label: "Voided", variant: "ghost", isDisabled: true },
+  };
   const config = STATUS_CONFIG[contract.status];
   const isTrusted = contract.maker.times_banned == 0;
 
   return (
     <Dialog>
       {/* The Trigger is the card itself */}
-      <DialogTrigger asChild>
-        <Card className="w-full flex flex-col h-full transition-all hover:border-primary/50 cursor-pointer overflow-hidden shadow-sm hover:shadow-md">
+      
+        <Card className="w-full flex flex-col h-full transition-all hover:border-primary/50 overflow-hidden shadow-sm hover:shadow-md">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b bg-muted/5">
             <div className="flex items-center text-sm font-bold text-green-600">
               <Coins className="mr-1.5 h-4 w-4" />${contract.amount.toFixed(2)}
@@ -110,17 +113,17 @@ export default function ContractCard({ contract }: { contract: Contract }) {
                 </div>
             ) : (
               /* Standard Button for all other states */
+              <DialogTrigger asChild>
               <Button
                 className="w-full font-bold uppercase text-xs tracking-wider"
                 variant={config.variant}
-                disabled={config.isDisabled}
               >
                 {config.label}
               </Button>
+              </DialogTrigger>
             )}
           </CardFooter>
         </Card>
-      </DialogTrigger>
 
       {/* The Expanded View (Modal) */}
       <DialogContent className="sm:max-w-[525px] border-none shadow-2xl">
@@ -160,19 +163,23 @@ export default function ContractCard({ contract }: { contract: Contract }) {
           {/* Cancel Button - White/Outline */}
           <DialogTrigger asChild>
             <Button variant="outline" className="flex-1 sm:flex-none px-8">
-              Cancel
+              {contract.status === "open" ? "Cancel" : "Close"}
             </Button>
           </DialogTrigger>
           
-          {/* Accept Button - Green */}
-          <DialogTrigger asChild>
-            <Button 
-              className="flex-1 sm:flex-none px-8 bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20"
-              onClick={() => console.log("Wager Accepted")}
-            >
-              Accept Wager
-            </Button>
-          </DialogTrigger>
+          {/* Only show the Accept button if the status is 'open' */}
+          {contract.status === "open" && (
+            <DialogTrigger asChild>
+              <Button 
+                className="flex-1 sm:flex-none px-8 bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 disabled:bg-muted disabled:text-muted-foreground"
+                onClick={() => console.log("Wager Accepted")}
+                // Logic: Disabled if already disabled in config (e.g., user not logged in)
+                disabled={config.isDisabled}
+              >
+                {auth.isAuthenticated ? "Accept Wager" : "Login to Accept"}
+              </Button>
+            </DialogTrigger>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

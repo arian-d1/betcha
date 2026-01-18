@@ -57,7 +57,7 @@ export const MOCK_CONTRACTS: Contract[] = [
     amount: 50.0,
     status: "open",
     created_at: "2024-03-24T10:00:00Z",
-    winner: ""
+    winner: "",
   },
   {
     id: "c-201",
@@ -68,7 +68,7 @@ export const MOCK_CONTRACTS: Contract[] = [
     amount: 100.0,
     status: "active",
     created_at: "2024-03-23T08:00:00Z",
-    winner: ""
+    winner: "",
   },
 
   // --- RESOLVED CONTRACTS (With winners) ---

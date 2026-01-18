@@ -21,12 +21,17 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="*" element={<Navigate to="/login" replace />} />
           <Route path="/" element={<Navigate to="/contracts" replace />} />
-          <Route path="/login" element={<LoginPage handleLogin={user?.login}/>} />
+          <Route
+            path="/login"
+            element={<LoginPage handleLogin={user?.login} />}
+          />
           <Route path="/contracts" element={<ContractFeed></ContractFeed>} />
           <Route element={<ProtectedRoute />}>
             <Route path="/user/:id" element={<UserProfile></UserProfile>} />
-            <Route path="/contracts/:id" element={<ContractFeed></ContractFeed>} />
-
+            <Route
+              path="/contracts/:id"
+              element={<ContractFeed></ContractFeed>}
+            />
           </Route>
         </Route>
       </Routes>

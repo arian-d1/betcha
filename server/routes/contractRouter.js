@@ -14,4 +14,7 @@ contractRouter.get("/:contractId", contractController.getContractById);
 // PATCH /contracts/:contractId/claim - Claim a contract
 contractRouter.patch("/:contractId/claim", contractController.claimContract);
 
+// PATCH /contracts/:contractId/cancel - Cancel a contract (refund maker)
+contractRouter.patch("/:contractId/cancel", contractController.cancelContract);
+
 module.exports = contractRouter;

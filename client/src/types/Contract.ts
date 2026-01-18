@@ -5,10 +5,10 @@ export interface Contract {
   id: string;
   maker: User;
   taker: User | null;
-  winner: string;
   title: string;
   description: string;
   amount: number;
   status: ContractStatus;
+  winner: string;
   created_at: string;
 }

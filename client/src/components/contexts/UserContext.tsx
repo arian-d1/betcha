@@ -13,7 +13,7 @@ interface UserContextType {
 const defaultUserContext = {
   user: null,
   isAuthenticated: false,
-  setUser: (user) => {console.log("Default");},
+  setUser: (user) => {console.log("Default" + user);},
   setIsAuthenticated: (authentication) => {console.log("Default");},
   logout: () => {console.log("Default");}
 };

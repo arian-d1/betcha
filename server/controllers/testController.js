@@ -2,6 +2,7 @@
 
 function testFunction(req, res) {
   try {
+    console.log(req);
     return res.json("Message");
   } catch (e) {
     return res.json({

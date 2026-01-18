@@ -155,7 +155,7 @@ async function claimContract(id, claimingUserId) {
       status: "open",
       $or: [{ taker: null }, { taker: { $exists: false } }],
     },
-    { $set: { taker: claimingUserId, status: "claimed" } },
+    { $set: { taker: claimingUserId, status: "active" } },
     { returnDocument: "after" },
   );
 }

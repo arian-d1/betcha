@@ -86,7 +86,8 @@ async function createContract(contract) {
 
 async function listPublicContracts({ page = 1, limit = 20, search, username }) {
   const contracts = await getContractsCollection();
-  const query = { status: "open" };
+  const query = {};
+  query.status = { $in: ["open", "active", "resolved", "cancelled"] }
 
   if (username) {
     const u = await getUserByUsername(username);

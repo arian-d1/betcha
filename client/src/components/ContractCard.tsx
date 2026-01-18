@@ -198,25 +198,41 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
           <CardFooter className="border-t bg-muted/10 h-20 flex items-center justify-center shrink-0 px-4">
             {contract.status === "resolved" ? (
               <div className="flex flex-col items-center w-full space-y-1">
-                {/* Winner Section */}
-                <div className="flex items-center justify-center gap-2">
-                  <TrophyWinner name={contract.winner === contract.maker.id ? contract.maker.username : contract.taker?.username} />
-                </div>
-
-                {/* Loser Section - De-emphasized */}
-                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-tight italic">
-                    Defeated: {contract.winner === contract.maker.id ? contract.taker?.username : contract.maker.username}
-                  </p>
-                </div>
+                {/* 1. DISPUTE STATE: Resolved but no winner (Draw/Conflict) */}
+                {contract.winner == null ? (
+                  <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
+                    <div className="flex items-center justify-center gap-2 text-amber-600">
+                      <ShieldAlert className="h-4 w-4" />
+                      <span className="text-sm font-bold uppercase tracking-widest">Disputed Result</span>
+                      <ShieldAlert className="h-4 w-4" />
+                    </div>
+                    <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-tight italic">
+                      Stakes Returned • No Victor Declared
+                    </p>
+                  </div>
+                ) : (
+                  /* 2. WINNER STATE: Standard Trophy View */
+                  <>
+                    <div className="flex items-center justify-center gap-2">
+                      <TrophyWinner 
+                        name={contract.winner === contract.maker.id ? contract.maker.username : contract.taker?.username} 
+                      />
+                    </div>
+                    <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-tight italic">
+                      Defeated: {contract.winner === contract.maker.id ? contract.taker?.username : contract.maker.username}
+                    </p>
+                  </>
+                )}
+              </div>
             ) : (
-              /* Standard Button for all other states */
+              /* Standard Button for Open/Active states */
               <DialogTrigger asChild>
-              <Button
-                className="w-full font-bold uppercase text-xs tracking-wider"
-                variant={config.variant}
-              >
-                {config.label}
-              </Button>
+                <Button
+                  className="w-full font-bold uppercase text-xs tracking-wider"
+                  variant={config.variant}
+                >
+                  {config.label}
+                </Button>
               </DialogTrigger>
             )}
           </CardFooter>

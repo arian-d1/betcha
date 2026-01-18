@@ -1,8 +1,16 @@
-require('dotenv').config();
-const { createUser, getUser, updateUser, deleteUser, createContract, getContract, updateContract, deleteContract} = require('./queries.js');
+require("dotenv").config();
+const {
+  createUser,
+  getUser,
+  updateUser,
+  deleteUser,
+  createContract,
+  getContract,
+  updateContract,
+  deleteContract,
+} = require("./queries.js");
 
 async function runTests() {
-  
   // -------------------
   // USER TESTS
   // -------------------
@@ -17,7 +25,7 @@ async function runTests() {
     username: "JSmithsonian",
     email: "jack.smith@no.com",
     balance: 0,
-    accountCreatedAt: new Date("1900-01-01T00:00:00Z")
+    accountCreatedAt: new Date("1900-01-01T00:00:00Z"),
   });
   console.log("Inserted:", createResult.insertedId);
 
@@ -33,7 +41,6 @@ async function runTests() {
   const deleteResult = await deleteUser(testUuid);
   console.log("Deleted count:", deleteResult.deletedCount);
 
-  
   // -------------------
   // CONTRACT TESTS
   // -------------------
@@ -49,7 +56,7 @@ async function runTests() {
     amount: 100,
     status: "open",
     winner: null,
-    created_at: new Date()
+    created_at: new Date(),
   });
   console.log("Inserted:", createContractResult.insertedId);
 
@@ -58,9 +65,9 @@ async function runTests() {
   console.log("Found contract:", contract);
 
   console.log("\n=== UPDATE CONTRACT ===");
-  const updateContractResult = await updateContract(testContractId, { 
-    status: "active", 
-    taker: testUuid
+  const updateContractResult = await updateContract(testContractId, {
+    status: "active",
+    taker: testUuid,
   });
   console.log("Modified count:", updateContractResult.modifiedCount);
 
@@ -71,7 +78,7 @@ async function runTests() {
   process.exit(0); // ensures Node exits after async operations
 }
 
-runTests().catch(err => {
+runTests().catch((err) => {
   console.error(err);
   process.exit(1);
 });

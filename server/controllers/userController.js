@@ -21,9 +21,10 @@ function mapUser(u) {
     fname: u.firstName ?? null,
     lname: u.lastName ?? null,
     email: u.email ?? null,
-    created_at: u.accountCreatedAt instanceof Date
-      ? u.accountCreatedAt.toISOString()
-      : u.accountCreatedAt,
+    created_at:
+      u.accountCreatedAt instanceof Date
+        ? u.accountCreatedAt.toISOString()
+        : u.accountCreatedAt,
     balance: Number(u.balance ?? 0),
     times_banned: Number(u.timesBanned ?? 0),
   };
@@ -156,7 +157,9 @@ async function updateUserProfile(req, res) {
     // Validate
     for (const [k, v] of Object.entries(updates)) {
       if (typeof v !== "string") {
-        return res.status(400).json({ success: false, error: `${k} must be a string` });
+        return res
+          .status(400)
+          .json({ success: false, error: `${k} must be a string` });
       }
     }
 

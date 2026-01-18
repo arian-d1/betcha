@@ -7,7 +7,7 @@ import { UserContext } from "./contexts/UserContext";
 import Logo from "../assets/vector/default-monochrome-black.svg";
 // In a real app, you'd get this from an Auth Context
 export function Navbar() {
-  const user = useContext(UserContext);
+  const auth = useContext(UserContext);
   return (
     <nav className="border-b bg-card px-6 py-3 flex items-center justify-between sticky top-0 z-50">
       <Link to="/contracts" className="text-xl font-bold tracking-tighter">
@@ -16,11 +16,11 @@ export function Navbar() {
 
       <div className="flex items-center gap-6">
         <div className="hidden md:flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          {user.isAuthenticated ? (
+          {auth.isAuthenticated ? (
             <>
               <Wallet className="h-4 w-4" />
               {/* Use .toFixed(2) for currency and ?? as a fallback for 0 */}
-              <span>${user.user?.balance.toFixed(2) ?? "0.00"}</span>
+              <span>${auth.user?.balance.toFixed(2) ?? "0.00"}</span>
             </>
           ) : (
             ""
@@ -29,8 +29,8 @@ export function Navbar() {
 
         <Link
           to={
-            user.isAuthenticated
-              ? `/user/${user.user?.id ?? "login"}`
+            auth.isAuthenticated
+              ? `/user/${auth.user?.id ?? "login"}`
               : `/user/login`
           }
         >

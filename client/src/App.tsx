@@ -10,12 +10,11 @@ import {
 import LoginPage from "./components/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserProfile from "./components/UserProfile";
-import { useContext } from "react";
-import { UserContext } from "./components/contexts/UserContext";
+import { UserProvider } from "./components/contexts/UserContext";
 
 export default function App() {
-  const user = useContext(UserContext);
   return (
+    <UserProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
@@ -23,7 +22,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/contracts" replace />} />
           <Route
             path="/login"
-            element={<LoginPage handleLogin={user?.login} />}
+            element={<LoginPage />}
           />
           <Route path="/contracts" element={<ContractFeed></ContractFeed>} />
           <Route element={<ProtectedRoute />}>
@@ -36,5 +35,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+  </UserProvider>
   );
 }

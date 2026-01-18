@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "./ThemeProvider.tsx";
-import { NotificationStack } from "./NotificationStack.tsx";
+import { NotificationManager } from "./NotificationManager.tsx";
 
 
 export function Navbar() {
@@ -109,7 +109,7 @@ export function Navbar() {
           </Dialog>
         )}
         
-        {auth.isAuthenticated ? <NotificationStack notifications={[]} onAction={() => {}}  /> : <></>}
+        {auth.isAuthenticated ? <NotificationManager/> : <></>}
           
         <ModeToggle />
       </div>

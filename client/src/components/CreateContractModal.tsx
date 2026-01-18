@@ -87,7 +87,7 @@ export default function CreateContractModal({ onContractCreated, isDisabled }: {
             <Label htmlFor="title">Contract Title</Label>
             <Input
               id="title"
-              placeholder="e.g. 1v1 Rust Quickscopes Only"
+              placeholder="e.g. CS2 1v1"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required

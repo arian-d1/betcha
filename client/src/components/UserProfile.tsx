@@ -47,6 +47,10 @@ export default function UserProfile() {
   const wins = resolvedContracts.filter((c) => c.winner === auth.user?.id);
   const losses = resolvedContracts.filter((c) => c.winner !== auth.user?.id);
 
+  const totalWinAmount = wins.reduce((sum, c) => sum + c.amount, 0);
+  const totalLossAmount = losses.reduce((sum, c) => sum + c.amount, 0);
+  const netPnL = totalWinAmount - totalLossAmount;
+
   if (auth.user == null) return <UnauthorizedPage />;
   if (auth.user.username.trim() === "") return <SetUsernamePage />;
 
@@ -127,10 +131,20 @@ export default function UserProfile() {
 
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2 text-sm">
+                    <History className="h-4 w-4 text-yellow-500" /> Net P/L:
+                  </div>
+                  <span className="font-bold">
+                    ${netPnL.toFixed(2)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-sm">
                     <Trophy className="h-4 w-4 text-yellow-500" /> Total Wagers
                   </div>
                   <span className="font-bold">{contracts.length}</span>
                 </div>
+
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2 text-sm">
                     <History className="h-4 w-4 text-blue-500" /> Active

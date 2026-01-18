@@ -172,7 +172,13 @@ export default function ContractCard({ contract }: { contract: Contract }) {
             <DialogTrigger asChild>
               <Button 
                 className="flex-1 sm:flex-none px-8 bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 disabled:bg-muted disabled:text-muted-foreground"
-                onClick={() => console.log("Wager Accepted")}
+
+                // REQUIRE: User must have sufficient funds
+                // EFFECT: Accepting wager will set the currently logged in user as the taker
+                //       and change contract status to "active" to the backend/database.
+                onClick={() => {}}
+
+
                 // Logic: Disabled if already disabled in config (e.g., user not logged in)
                 disabled={config.isDisabled}
               >

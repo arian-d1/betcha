@@ -4,7 +4,7 @@ export interface User {
   fname: string;
   lname: string;
   email: string;
-  created_at: string;
   balance: number;
   times_banned: number;
+  created_at: string;
 }

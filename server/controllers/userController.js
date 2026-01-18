@@ -9,7 +9,8 @@
 //       error: e.message || "Test Error",
 //     });
 //   }
-// }nu
+// }
+
 const crypto = require("crypto");
 const db = require("../db/queries");
 
@@ -49,7 +50,7 @@ async function createContract(req, res) {
       });
     }
     const amountNum = Number(contractAmount);
-    if (contractAmount == null || Number.isNaN(Number(amountNum))) {
+    if (contractAmount == null || Number.isNaN(amountNum)) {
       return res
         .status(400)
         .json({ success: false, error: "contractAmount is required (number)" });

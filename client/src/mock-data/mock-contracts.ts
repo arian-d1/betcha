@@ -53,7 +53,7 @@ export const MOCK_CONTRACTS: Contract[] = [
     maker: users.alice,
     taker: null,
     title: "Chess Match: $50 Stakes",
-    description: "Blitz 5+0 on Lichess. Winner takes all.Blitz 5+0 on Lichess. Winner takes all.Blitz 5+0 on Lichess. Winner takes all.Blitz 5+0 on Lichess. Winner takes all.",
+    description: "Blitz 5+0 on Lichess. Winner takes all.",
     amount: 50.0,
     status: "open",
     created_at: "2024-03-24T10:00:00Z",

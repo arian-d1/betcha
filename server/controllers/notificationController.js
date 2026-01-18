@@ -15,7 +15,7 @@ function mapNotification(n) {
   };
 }
 
-// GET /api/notifications?to_uid=...&from_uid=...&contract_id=...&status=...&limit=...
+// GET /notifications?to_uid=...&from_uid=...&contract_id=...&status=...&limit=...
 async function getNotifications(req, res) {
   try {
     const { to_uid, from_uid, contract_id, status, limit } = req.query;
@@ -47,7 +47,7 @@ async function getNotifications(req, res) {
   }
 }
 
-// PUT /api/notifications
+// PUT /notifications
 // body: { from_uid, to_uid, contract_id, amount, status? }
 async function createNotification(req, res) {
   try {
@@ -101,7 +101,7 @@ async function createNotification(req, res) {
   }
 }
 
-// PATCH /api/notifications/:notificationId
+// PATCH /notifications/:notificationId
 // body: { status }
 async function patchNotificationStatus(req, res) {
   try {
@@ -136,68 +136,103 @@ async function patchNotificationStatus(req, res) {
         return res.status(404).json({ success: false, error: "Contract not found" });
       }
 
-      // This logic assumes both parties already escrowed the "old" amount (typical for active contracts)
-      if (contract.status !== "active") {
+      // This acceptance flow is for "negotiated bid on an OPEN contract":
+      // - maker already escrowed old amount at creation
+      // - proposer has NOT escrowed anything when sending the notification
+      if (contract.status !== "open") {
         return res.status(409).json({
           success: false,
-          error: "Negotiated bid can only be accepted for active contracts",
+          error: "Negotiated bid can only be accepted for open contracts",
+        });
+      }
+
+      const proposerId = notification.from_uid; // sender proposed the new amount
+      const makerId = contract.maker;
+      const acceptorId = notification.to_uid; // receiver accepting (should be maker)
+
+      if (!makerId) {
+        return res.status(409).json({ success: false, error: "Contract maker missing" });
+      }
+      if (acceptorId !== makerId) {
+        return res.status(403).json({
+          success: false,
+          error: "Only the contract maker can accept this negotiated bid",
+        });
+      }
+      if (proposerId === makerId) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid negotiated bid: proposer cannot be the contract maker",
         });
       }
 
       const oldAmount = Number(contract.amount ?? 0);
       const newAmount = Number(notification.amount);
 
+      if (Number.isNaN(oldAmount) || oldAmount <= 0) {
+        return res.status(409).json({ success: false, error: "Contract amount is invalid" });
+      }
       if (Number.isNaN(newAmount) || newAmount <= 0) {
-        return res.status(400).json({ success: false, error: "Notification amount must be a number > 0" });
+        return res.status(400).json({
+          success: false,
+          error: "Notification amount must be a number > 0",
+        });
       }
 
       const diff = newAmount - oldAmount;
 
-      // Only do balance changes / contract update if it actually changes the wager
-      if (diff !== 0) {
-        const proposerId = notification.from_uid; // sender proposed the new amount
-        const acceptorId = notification.to_uid;   // receiver is accepting
+      const [proposer, maker] = await Promise.all([
+        db.getUser(proposerId),
+        db.getUser(makerId),
+      ]);
 
-        const [proposer, acceptor] = await Promise.all([
-          db.getUser(proposerId),
-          db.getUser(acceptorId),
-        ]);
-
-        if (!proposer) return res.status(404).json({ success: false, error: "Proposer user not found" });
-        if (!acceptor) return res.status(404).json({ success: false, error: "Acceptor user not found" });
-
-        const proposerBal = Number(proposer.balance ?? 0);
-        const acceptorBal = Number(acceptor.balance ?? 0);
-
-        // If increasing wager, both need to contribute the additional diff
-        if (diff > 0) {
-          if (proposerBal < diff) {
-            return res.status(400).json({
-              success: false,
-              error: "Proposer has insufficient balance for the increased wager",
-            });
-          }
-          if (acceptorBal < diff) {
-            return res.status(400).json({
-              success: false,
-              error: "Acceptor has insufficient balance for the increased wager",
-            });
-          }
-        }
-
-        const nextProposerBal = proposerBal - diff; // diff<0 => refunds (minus negative)
-        const nextAcceptorBal = acceptorBal - diff;
-
-        // Apply updates
-        await Promise.all([
-          db.updateUser(proposerId, { balance: nextProposerBal }),
-          db.updateUser(acceptorId, { balance: nextAcceptorBal }),
-          db.updateContract(contract.id, { amount: newAmount }),
-        ]);
+      if (!proposer) {
+        return res.status(404).json({ success: false, error: "Proposer user not found" });
       }
+      if (!maker) {
+        return res.status(404).json({ success: false, error: "Maker user not found" });
+      }
+
+      const proposerBal = Number(proposer.balance ?? 0);
+      const makerBal = Number(maker.balance ?? 0);
+
+      // Proposer must fund the FULL new wager now (they were NOT charged on notification send)
+      if (proposerBal < newAmount) {
+        return res.status(400).json({
+          success: false,
+          error: "Proposer has insufficient balance for the wager",
+        });
+      }
+
+      // Maker already escrowed oldAmount; they only need to cover the increase (diff) if diff > 0
+      if (diff > 0 && makerBal < diff) {
+        return res.status(400).json({
+          success: false,
+          error: "Maker has insufficient balance to increase the wager",
+        });
+      }
+
+      const nextProposerBal = proposerBal - newAmount;
+      const nextMakerBal = makerBal - diff; // diff<0 => refund (subtracting negative adds)
+
+      // Apply updates (best-effort ordering: funds + contract + notification)
+      await Promise.all([
+        db.updateUser(proposerId, { balance: nextProposerBal }),
+        db.updateUser(makerId, { balance: nextMakerBal }),
+        db.updateContract(contract.id, { amount: newAmount, status: "active", taker: proposerId }),
+      ]);
+
+      const result = await db.updateNotificationStatus(notificationId, "accepted");
+      const updated = result?.value;
+
+      return res.json({
+        success: true,
+        message: "Negotiated bid accepted; contract activated",
+        data: mapNotification(updated ?? { ...notification, status: "accepted" }),
+      });
     }
 
-    // Finally update notification status
+    // Non-accept case: just update notification status
     const result = await db.updateNotificationStatus(notificationId, status);
     const updated = result?.value;
 

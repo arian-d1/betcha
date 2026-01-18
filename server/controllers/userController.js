@@ -13,6 +13,8 @@
 
 const crypto = require("crypto");
 const db = require("../db/queries");
+const Filter = require("bad-words");
+const profanityFilter = new Filter();
 
 function mapUser(u) {
   return {
@@ -50,6 +52,19 @@ async function createContract(req, res) {
         error: "contractDescription is required (string)",
       });
     }
+    if (profanityFilter.isProfane(contractTitle)) {
+      return res.status(400).json({
+        success: false,
+        error: "Contract title contains blocked language",
+      }); 
+    }
+    if (profanityFilter.isProfane(description)) {
+      return res.status(400).json({
+        success: false,
+        error: "Contract description contains blocked language",
+      }); profanityFilter.isProfane(description)
+    }
+
     const amountNum = Number(contractAmount);
     if (contractAmount == null || Number.isNaN(amountNum)) {
       return res
@@ -167,10 +182,30 @@ async function updateUsername(req, res) {
     }
 
     const nextUsername = username.trim();
-    if (!nextUsername) {
-      return res
-        .status(400)
-        .json({ success: false, error: "username cannot be empty" });
+
+    // length 3-20
+    if (nextUsername.length < 3 || nextUsername.length > 20) {
+      return res.status(400).json({
+        success: false,
+        error: "username must be between 3 and 20 characters",
+      });
+    }
+
+    // allowed chars + must start with letter
+    if (!/^[a-z][a-z0-9_]*$/.test(nextUsername)) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "username must start with a letter and contain only letters, numbers, and underscores",
+      });
+    }
+
+    // profanity filtering
+    if (profanityFilter.isProfane(nextUsername)) {
+      return res.status(400).json({
+        success: false,
+        error: "username contains blocked language",
+      });
     }
 
     // Check if username is already taken (by someone else)

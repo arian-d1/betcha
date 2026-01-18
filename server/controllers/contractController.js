@@ -106,6 +106,7 @@ function claimContract(req, res) {
     }
 
     // TODO: Database logic goes here (ensure contract is public/unclaimed, etc.)
+    
     return res.json({
       success: true,
       message: `Contract ${contractId} has been claimed`,

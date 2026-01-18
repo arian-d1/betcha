@@ -52,6 +52,110 @@ function createContract(req, res) {
   }
 }
 
+function getUserProfile(req, res) {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "Missing userId" });
+    }
+    
+    // const user = {
+    //   id: userId,
+    //   username: "placeholder_username",
+    //   fname: "First",
+    //   lname: "Last",
+    //   email: "user@example.com",
+    //   created_at: new Date().toISOString(),
+    //   balance: 0,
+    //   times_banned: 0,
+    // };
+
+    // TODO: Replace with DB lookup
+    // TODO: user = ...
+
+    return res.json({ success: true, data: user });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      error: e?.message || "Failed to fetch user profile",
+    });
+  }
+}
+
+function updateUserProfile(req, res) {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "Missing userId" });
+    }
+
+    const allowedFields = ["username", "fname", "lname", "email"];
+    const updates = {};
+
+    for (const key of allowedFields) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: `No valid fields to update. Allowed: ${allowedFields.join(", ")}`,
+      });
+    }
+
+    // Basic validation
+    if (updates.username !== undefined && typeof updates.username !== "string") {
+      return res
+        .status(400)
+        .json({ success: false, error: "username must be a string" });
+    }
+    if (updates.fname !== undefined && typeof updates.fname !== "string") {
+      return res
+        .status(400)
+        .json({ success: false, error: "fname must be a string" });
+    }
+    if (updates.lname !== undefined && typeof updates.lname !== "string") {
+      return res
+        .status(400)
+        .json({ success: false, error: "lname must be a string" });
+    }
+    if (updates.email !== undefined && typeof updates.email !== "string") {
+      return res
+        .status(400)
+        .json({ success: false, error: "email must be a string" });
+    }
+
+    // const updatedUser = {
+    //   id: userId,
+    //   username: "placeholder_username",
+    //   fname: "First",
+    //   lname: "Last",
+    //   email: "user@example.com",
+    //   created_at: new Date().toISOString(),
+    //   balance: 0,
+    //   times_banned: 0,
+    // };
+
+    // TODO: Replace with DB update
+    // TODO: const updatedUser = ...;
+
+    return res.json({
+      success: true,
+      message: "Profile updated",
+      data: updatedUser,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      error: e?.message || "Failed to update user profile",
+    });
+  }
+}
+
 module.exports = {
-  createContract
+  createContract,
+  getUserProfile,
+  updateUserProfile,
 };

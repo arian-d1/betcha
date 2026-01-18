@@ -235,8 +235,12 @@ async function patchNotificationStatus(req, res) {
 
     // Non-accept case: just update notification status
     const result = await db.updateNotificationStatus(notificationId, status);
-    const updated = result?.value;
+    const updated = result?.value || result;
 
+    if (!updated || !updated.id) {
+      updated = await db.getNotification(notificationId);
+    }
+    
     if (!updated) {
       return res.status(404).json({ success: false, error: "Notification not found" });
     }

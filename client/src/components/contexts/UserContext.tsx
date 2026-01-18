@@ -38,17 +38,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       try {
         // This request sends the cookie automatically because withCredentials: true
         const res = await api.get("/auth/me"); 
+        console.log(res);
         if (res.data.user) {
-          console.log(res.data);
+          const user = res.data.user;
           setUser({
-            id: "1",
-            username: "name",
-            fname: "fname",
-            lname: "lname",
-            email: res.data.user.email,
-            created_at: String(Date.now()),
-            balance: 100000,
-            times_banned: 1
+            id: user.uuid,
+            username: user.username,
+            fname: user.firstName,
+            lname: user.lastName,
+            email: user.email,
+            created_at: user.accountCreatedAt,
+            balance: user.balance,
+            times_banned: user.timesBanned,
           });
           setIsAuthenticated(true);
         }
@@ -59,7 +60,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
       }
     };
-
     initAuth();
   }, []);
 

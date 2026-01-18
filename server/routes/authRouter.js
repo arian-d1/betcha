@@ -76,7 +76,7 @@ router.post("/google", async (req, res) => {
       sameSite: "lax",
     });
 
-    res.json({ user });
+    res.json({ user: dbUser });
   } catch (err) {
     console.error(err);
     res.status(401).json({ error: "Authentication failed" });
@@ -88,7 +88,7 @@ router.post("/logout", (req, res) => {
   res.json({ message: "Logged out" });
 });
 
-router.get("/me", (req, res) => {
+router.get("/me", async (req, res) => {
   const token = req.cookies.session; // Matches the name in res.cookie("session", ...)
 
   if (!token) {
@@ -97,8 +97,8 @@ router.get("/me", (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // Return the user data stored in the JWT
-    res.json({ authenticated: true, user: decoded });
+    const user = await db.getUserByEmail(decoded.email)
+    res.json({ authenticated: true, user });
   } catch (err) {
     res.status(401).json({ authenticated: false, message: "Invalid session" });
   }

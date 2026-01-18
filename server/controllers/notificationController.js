@@ -5,7 +5,7 @@ const ALLOWED_STATUSES = new Set(["pending", "accepted", "declined"]);
 
 function mapNotification(n) {
   return {
-    n_id: n.n_id,
+    id: n.id,
     from_uid: n.from_uid,
     to_uid: n.to_uid,
     contract_id: n.contract_id,
@@ -77,7 +77,7 @@ async function createNotification(req, res) {
     }
 
     const notification = {
-      n_id: crypto.randomUUID(),
+      id: crypto.randomUUID(),
       from_uid,
       to_uid,
       contract_id,

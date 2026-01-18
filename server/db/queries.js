@@ -176,7 +176,7 @@ async function claimContract(id, claimingUserId) {
 async function createNotification(notification) {
   const notifications = await getNotificationsCollection();
   return notifications.insertOne({
-    n_id: notification.n_id,
+    id: notification.id,
     from_uid: notification.from_uid,
     to_uid: notification.to_uid,
     contract_id: notification.contract_id,
@@ -207,17 +207,17 @@ async function listNotifications({ to_uid, from_uid, contract_id, status, limit 
   return data;
 }
 
-// READ — Get notification by n_id
-async function getNotification(n_id) {
+// READ — Get notification by id
+async function getNotification(id) {
   const notifications = await getNotificationsCollection();
-  return notifications.findOne({ n_id });
+  return notifications.findOne({ id });
 }
 
 // PATCH — Update status by notification id
-async function updateNotificationStatus(n_id, status) {
+async function updateNotificationStatus(id, status) {
   const notifications = await getNotificationsCollection();
   return notifications.findOneAndUpdate(
-    { n_id },
+    { id },
     { $set: { status, updated_at: new Date() } },
     { returnDocument: "after" },
   );

@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Chrome } from "lucide-react"; // Or use a Google Icon
 import { useContext, useEffect } from "react";
 import api from "@/api/axios";
 import { UserContext } from "./contexts/UserContext";
@@ -77,14 +75,8 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <Button
-            variant="outline"
-            onClick={() => {window.google.accounts.id.prompt(); console.log("rpressred")}}
-            className="w-full gap-2"
-          >
-            <Chrome className="h-4 w-4" />
-            Continue with Google
-          </Button>
+          {/* Google button will be rendered here */}
+          <div id="googleButton" className="w-full"></div>
         </CardContent>
       </Card>
     </div>

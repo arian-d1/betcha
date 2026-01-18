@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { User2, Wallet, Swords, Info, PlusCircle, ArrowUpRight } from "lucide-react";
 import { useContext, useState } from "react";
 import { UserContext } from "./contexts/UserContext";
-import Logo from "../assets/vector/default-monochrome-black.svg";
+import DarkLogo from "../assets/vector/default-monochrome-black.svg";
+import LightLogo from "../assets/vector/default-monochrome-white.svg"
 import ModeToggle from "./ModeToggle";
 import { Dialog } from "@/components/ui/dialog";
 import { DepositModal, WithdrawModal } from "./WalletActions.tsx";
@@ -17,10 +18,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTheme } from "./ThemeProvider.tsx";
 
 
 export function Navbar() {
   const auth = useContext(UserContext);
+  const theme = useTheme();
   const [walletAction, setWalletAction] = useState<"deposit" | "withdraw" | null>(null);
   
   return (
@@ -28,7 +31,7 @@ export function Navbar() {
       {/* Left side: Logo + Arena */}
       <div className="flex items-center gap-4">
         <Link to="/contracts" className="text-xl font-bold tracking-tighter">
-          <img src={Logo} alt="Betcha!" className="h-8 w-auto" />
+          <img src={theme.theme == "light" ? DarkLogo : LightLogo } alt="Betcha!" className="h-8 w-auto" />
         </Link>
 
         <Link to="/about">

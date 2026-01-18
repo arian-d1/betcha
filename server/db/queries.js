@@ -1,5 +1,5 @@
-require('dotenv').config();
-const { MongoClient } = require('mongodb');
+require("dotenv").config();
+const { MongoClient } = require("mongodb");
 
 const client = new MongoClient(process.env.MONGODB_URI);
 const dbName = "main";
@@ -26,7 +26,7 @@ async function createUser(user) {
     accountCreatedAt: user.accountCreatedAt ?? new Date(),
     exp: user.exp,
     level: user.level,
-    timesBanned: user.timesBanned
+    timesBanned: user.timesBanned,
   });
 }
 
@@ -61,27 +61,27 @@ async function deleteUser(uuid) {
 
 // Get contracts collection
 async function getContractsCollection() {
-    if (!client.isConnected?.()) {
-      await client.connect();
-    }
-    return client.db(dbName).collection(contractsCollectionName);
+  if (!client.isConnected?.()) {
+    await client.connect();
+  }
+  return client.db(dbName).collection(contractsCollectionName);
 }
 
 // CREATE — Insert a new contract
 async function createContract(contract) {
-    const contracts = await getContractsCollection();
-    return contracts.insertOne({
-        id: contract.id,
-        maker: contract.maker,
-        taker: contract.taker,
-        title: contract.title,
-        description: contract.description,
-        amount: contract.amount,
-        status: contract.status ?? "open",
-        winner: contract.winner,
-        created_at: contract.created_at ?? new Date()
-    });
-  }
+  const contracts = await getContractsCollection();
+  return contracts.insertOne({
+    id: contract.id,
+    maker: contract.maker,
+    taker: contract.taker,
+    title: contract.title,
+    description: contract.description,
+    amount: contract.amount,
+    status: contract.status ?? "open",
+    winner: contract.winner,
+    created_at: contract.created_at ?? new Date(),
+  });
+}
 
 async function listPublicContracts({ page = 1, limit = 20, search, username }) {
   const contracts = await getContractsCollection();
@@ -106,38 +106,43 @@ async function listPublicContracts({ page = 1, limit = 20, search, username }) {
   const skip = (page - 1) * limit;
 
   const [data, total] = await Promise.all([
-    contracts.find(query).sort({ created_at: -1 }).skip(skip).limit(limit).toArray(),
+    contracts
+      .find(query)
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray(),
     contracts.countDocuments(query),
   ]);
 
   return { data, total };
 }
-  
-  // READ — Get a user by UUID
-  async function getContract(id) {
-    const contracts = await getContractsCollection();
-    return contracts.findOne({ id });
-  }
 
-  async function getContractsByUser(userId) {
+// READ — Get a user by UUID
+async function getContract(id) {
+  const contracts = await getContractsCollection();
+  return contracts.findOne({ id });
+}
+
+async function getContractsByUser(userId) {
   const contracts = await getContractsCollection();
   return contracts
     .find({ $or: [{ maker: userId }, { taker: userId }] })
     .sort({ created_at: -1 })
     .toArray();
 }
-  
-  // UPDATE — Update a user by UUID
-  async function updateContract(id, updates) {
-    const contracts = await getContractsCollection();
-    return contracts.updateOne({ id }, { $set: updates });
-  }
-  
-  // DELETE — Delete a user by UUID
-  async function deleteContract(id) {
-    const contracts = await getContractsCollection();
-    return contracts.deleteOne({ id });
-  }
+
+// UPDATE — Update a user by UUID
+async function updateContract(id, updates) {
+  const contracts = await getContractsCollection();
+  return contracts.updateOne({ id }, { $set: updates });
+}
+
+// DELETE — Delete a user by UUID
+async function deleteContract(id) {
+  const contracts = await getContractsCollection();
+  return contracts.deleteOne({ id });
+}
 
 async function claimContract(id, claimingUserId) {
   const contracts = await getContractsCollection();
@@ -154,18 +159,18 @@ async function claimContract(id, claimingUserId) {
   );
 }
 
-module.exports = { 
-  createUser, 
-  getUser, 
+module.exports = {
+  createUser,
+  getUser,
   getUserByEmail,
   getUserByUsername,
-  updateUser, 
-  deleteUser, 
-  createContract, 
+  updateUser,
+  deleteUser,
+  createContract,
   listPublicContracts,
-  getContract, 
+  getContract,
   getContractsByUser,
-  updateContract, 
+  updateContract,
   deleteContract,
-  claimContract
+  claimContract,
 };

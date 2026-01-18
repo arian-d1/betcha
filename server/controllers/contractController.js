@@ -23,7 +23,8 @@ function mapContract(c) {
     amount: Number(c.amount),
     status: c.status,
     winner: c.winner ?? null,
-    created_at: c.created_at instanceof Date ? c.created_at.toISOString() : c.created_at,
+    created_at:
+      c.created_at instanceof Date ? c.created_at.toISOString() : c.created_at,
   };
 }
 
@@ -141,7 +142,8 @@ async function claimContract(req, res) {
     if (!updated) {
       return res.status(409).json({
         success: false,
-        error: "Contract cannot be claimed (not found, not open, or already claimed)",
+        error:
+          "Contract cannot be claimed (not found, not open, or already claimed)",
       });
     }
 

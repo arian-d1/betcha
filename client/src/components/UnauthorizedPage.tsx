@@ -1,6 +1,12 @@
 // pages/UnauthorizedPage.tsx
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ShieldAlert, ArrowLeft, LockKeyhole } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,8 +24,8 @@ export default function UnauthorizedPage() {
             Access Denied
           </CardTitle>
           <p className="mt-2 text-sm text-muted-foreground">
-            You don't have permission to do this action. 
-            Please sign in to verify your identity.
+            You don't have permission to do this action. Please sign in to
+            verify your identity.
           </p>
         </CardHeader>
 
@@ -30,17 +36,17 @@ export default function UnauthorizedPage() {
         </CardContent>
 
         <CardFooter className="flex flex-col gap-3">
-          <Button 
-            className="w-full bg-primary" 
+          <Button
+            className="w-full bg-primary"
             size="lg"
             onClick={() => navigate("/login")}
           >
             Sign In
           </Button>
-          
-          <Button 
-            variant="ghost" 
-            className="w-full gap-2" 
+
+          <Button
+            variant="ghost"
+            className="w-full gap-2"
             onClick={() => navigate("/contracts")}
           >
             <ArrowLeft className="h-4 w-4" />

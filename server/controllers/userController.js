@@ -9,9 +9,26 @@
 //       error: e.message || "Test Error",
 //     });
 //   }
-// }
+// }nu
+const crypto = require("crypto");
+const db = require("../db/queries");
 
-function createContract(req, res) {
+function mapUser(u) {
+  return {
+    id: u.uuid,
+    username: u.username ?? null,
+    fname: u.firstName ?? null,
+    lname: u.lastName ?? null,
+    email: u.email ?? null,
+    created_at: u.accountCreatedAt instanceof Date
+      ? u.accountCreatedAt.toISOString()
+      : u.accountCreatedAt,
+    balance: Number(u.balance ?? 0),
+    times_banned: Number(u.timesBanned ?? 0),
+  };
+}
+
+async function createContract(req, res) {
   try {
     const { userId } = req.params;
     const { contractTitle, contractDescription, contractAmount } = req.body;
@@ -31,23 +48,31 @@ function createContract(req, res) {
         error: "contractDescription is required (string)",
       });
     }
-    if (contractAmount == null || Number.isNaN(Number(contractAmount))) {
+    const amountNum = Number(contractAmount);
+    if (contractAmount == null || Number.isNaN(Number(amountNum))) {
       return res
         .status(400)
         .json({ success: false, error: "contractAmount is required (number)" });
     }
 
-    // TODO: Database logic goes here
+    const contract = {
+      id: crypto.randomUUID(),
+      maker: userId,
+      taker: null,
+      title: contractTitle,
+      description: contractDescription,
+      amount: amountNum,
+      status: "open",
+      winner: null,
+      created_at: new Date(),
+    };
+
+    await db.createContract(contract);
 
     return res.status(201).json({
       success: true,
       message: "New contract created",
-      creatorId: userId,
-      data: {
-        contractTitle,
-        contractDescription,
-        contractAmount: Number(contractAmount),
-      },
+      data: contract,
     });
   } catch (e) {
     return res.status(500).json({
@@ -57,7 +82,7 @@ function createContract(req, res) {
   }
 }
 
-function getUserProfile(req, res) {
+async function getUserProfile(req, res) {
   try {
     const { userId } = req.params;
 
@@ -65,19 +90,10 @@ function getUserProfile(req, res) {
       return res.status(400).json({ success: false, error: "Missing userId" });
     }
 
-    // const user = {
-    //   id: userId,
-    //   username: "placeholder_username",
-    //   fname: "First",
-    //   lname: "Last",
-    //   email: "user@example.com",
-    //   created_at: new Date().toISOString(),
-    //   balance: 0,
-    //   times_banned: 0,
-    // };
-
-    // TODO: Replace with DB lookup
-    // TODO: user = ...
+    const user = await db.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
 
     return res.json({ success: true, data: user });
   } catch (e) {
@@ -88,7 +104,7 @@ function getUserProfile(req, res) {
   }
 }
 
-function getUserByEmail(req, res) {
+async function getUserByEmail(req, res) {
   try {
     const { email } = req.query;
 
@@ -98,21 +114,11 @@ function getUserByEmail(req, res) {
         .json({ success: false, error: "email query param is required" });
     }
 
-    // const updatedUser = {
-    //   id: userId,
-    //   username: "placeholder_username",
-    //   fname: "First",
-    //   lname: "Last",
-    //   email: "user@example.com",
-    //   created_at: new Date().toISOString(),
-    //   balance: 0,
-    //   times_banned: 0,
-    // };
+    const user = await db.getUserByEmail(email);
 
-    // TODO: Replace with DB lookup by email
-    // TODO: const user = ...;
-
-    if (!user) return res.status(404).json({ success: false, error: "User not found" });
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
 
     return res.json({ success: true, data: user });
   } catch (e) {
@@ -123,7 +129,7 @@ function getUserByEmail(req, res) {
   }
 }
 
-function updateUserProfile(req, res) {
+async function updateUserProfile(req, res) {
   try {
     const { userId } = req.params;
 
@@ -131,6 +137,7 @@ function updateUserProfile(req, res) {
       return res.status(400).json({ success: false, error: "Missing userId" });
     }
 
+    // API fields allowed
     const allowedFields = ["username", "fname", "lname", "email"];
     const updates = {};
 
@@ -145,49 +152,31 @@ function updateUserProfile(req, res) {
       });
     }
 
-    // Basic validation
-    if (
-      updates.username !== undefined &&
-      typeof updates.username !== "string"
-    ) {
-      return res
-        .status(400)
-        .json({ success: false, error: "username must be a string" });
-    }
-    if (updates.fname !== undefined && typeof updates.fname !== "string") {
-      return res
-        .status(400)
-        .json({ success: false, error: "fname must be a string" });
-    }
-    if (updates.lname !== undefined && typeof updates.lname !== "string") {
-      return res
-        .status(400)
-        .json({ success: false, error: "lname must be a string" });
-    }
-    if (updates.email !== undefined && typeof updates.email !== "string") {
-      return res
-        .status(400)
-        .json({ success: false, error: "email must be a string" });
+    // Validate
+    for (const [k, v] of Object.entries(updates)) {
+      if (typeof v !== "string") {
+        return res.status(400).json({ success: false, error: `${k} must be a string` });
+      }
     }
 
-    // const updatedUser = {
-    //   id: userId,
-    //   username: "placeholder_username",
-    //   fname: "First",
-    //   lname: "Last",
-    //   email: "user@example.com",
-    //   created_at: new Date().toISOString(),
-    //   balance: 0,
-    //   times_banned: 0,
-    // };
+    // Map API -> DB
+    const dbUpdates = {};
+    if (updates.username !== undefined) dbUpdates.username = updates.username;
+    if (updates.fname !== undefined) dbUpdates.firstName = updates.fname;
+    if (updates.lname !== undefined) dbUpdates.lastName = updates.lname;
+    if (updates.email !== undefined) dbUpdates.email = updates.email;
 
-    // TODO: Replace with DB update
-    // TODO: const updatedUser = ...;
+    const result = await db.updateUser(userId, dbUpdates);
+    if (!result?.matchedCount) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const updatedUser = await db.getUser(userId);
 
     return res.json({
       success: true,
       message: "Profile updated",
-      data: updatedUser,
+      data: mapUser(updatedUser),
     });
   } catch (e) {
     return res.status(500).json({

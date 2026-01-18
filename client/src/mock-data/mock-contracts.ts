@@ -58,6 +58,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     status: "open",
     created_at: "2024-03-24T10:00:00Z",
     winner: "",
+    taker_claim: null,
+    maker_claim: null,
   },
   {
     id: "c-201",
@@ -69,6 +71,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     status: "active",
     created_at: "2024-03-23T08:00:00Z",
     winner: "",
+    taker_claim: null,
+    maker_claim: null,
   },
 
   // --- RESOLVED CONTRACTS (With winners) ---
@@ -82,6 +86,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     status: "resolved",
     winner: "u-1", // Alice won
     created_at: "2024-03-18T07:00:00Z",
+    taker_claim: null,
+    maker_claim: null,
   },
   {
     id: "c-302",
@@ -93,6 +99,8 @@ export const MOCK_CONTRACTS: Contract[] = [
     status: "resolved",
     winner: "u-4", // Dana won
     created_at: "2024-03-10T22:00:00Z",
+    taker_claim: null,
+    maker_claim: null,
   },
 
   // --- CANCELLED ---
@@ -106,5 +114,7 @@ export const MOCK_CONTRACTS: Contract[] = [
     status: "cancelled",
     winner: "",
     created_at: "2024-03-22T18:00:00Z",
+    taker_claim: null,
+    maker_claim: null,
   },
 ];

@@ -11,4 +11,8 @@ export interface Contract {
   status: ContractStatus;
   winner: string;
   created_at: string;
+  // True => I win
+  // False => I lose
+  maker_claim: boolean | null;
+  taker_claim: boolean | null;
 }

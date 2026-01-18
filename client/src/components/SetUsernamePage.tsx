@@ -36,6 +36,7 @@ export default function SetUsernamePage() {
       setUser({ ...user, username: res.data.username });
       // Redirect to home or profile
       navigate("/contracts");
+      window.location.reload();
     } catch (err: any) {
       setError(err.response?.data?.error || "This username is already taken.");
     } finally {

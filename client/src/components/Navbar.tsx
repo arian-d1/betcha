@@ -70,8 +70,8 @@ export function Navbar() {
           }
         >
           <Button variant="ghost" size="sm" className="gap-2">
-            {auth.isAuthenticated && auth.user ? null : <User2 className="h-4 w-4" />}
-            <span className="hidden sm:inline">{auth.isAuthenticated && auth.user ? `@${auth.user.username}` : 'Login'}</span>
+            {auth.isAuthenticated && auth.user?.username ? null : <User2 className="h-4 w-4" />}
+            <span className="hidden sm:inline">{auth.isAuthenticated && auth.user?.username ? `@${auth.user.username}` : 'Login'}</span>
           </Button>
         </Link>
         

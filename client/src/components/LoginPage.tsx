@@ -81,7 +81,7 @@ export default function LoginPage() {
     <div className="flex h-[80vh] items-center justify-center px-4">
       <Card className="w-full max-w-sm shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome to Arena</CardTitle>
+          <CardTitle className="text-2xl">Welcome to Betcha!</CardTitle>
           <CardDescription>
             Login with your Google account to start wagering.
           </CardDescription>

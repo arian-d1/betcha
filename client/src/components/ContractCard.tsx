@@ -117,6 +117,7 @@ export default function ContractCard({ contract }: { contract: Contract }) {
               <Button
                 className="w-full font-bold uppercase text-xs tracking-wider"
                 variant={config.variant}
+
               >
                 {config.label}
               </Button>

@@ -3,18 +3,25 @@ import type { Contract } from "@/types/Contract";
 import { MOCK_CONTRACTS } from "@/mock-data/mock-contracts";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { useState } from "react";
+import { PlusCircle, UserCog } from "lucide-react";
+import { useContext, useState } from "react";
+import CreateContractModal from "./CreateContractModal";
+import { UserContext } from "./contexts/UserContext";
 
 export default function ContractFeed() {
   const [contracts, setContracts] = useState<Array<Contract>>(MOCK_CONTRACTS);
   const [activeTab, setActiveTab] = useState<string>("open");
+  const auth = useContext(UserContext);
 
   const filteredContracts = contracts.filter((contract) => {
     if (activeTab === "all") return true;
     // Ensure your mock data categories match these values (case-sensitive)
     return contract.status.toLowerCase() === activeTab.toLowerCase();
   });
+
+  const handleAddContract = (newContract: Contract) => {
+    setContracts((prev) => [newContract, ...prev]);
+  };
 
   return (
     <div className="container mx-auto py-10 px-4">
@@ -25,9 +32,8 @@ export default function ContractFeed() {
             Accept a challenge or create your own.
           </p>
         </div>
-        <Button size="lg" className="gap-2">
-          <PlusCircle className="h-5 w-5" /> Create Contract
-        </Button>
+        
+        <CreateContractModal isDisabled={!auth.isAuthenticated} onContractCreated={handleAddContract} />
       </div>
 
       <Tabs

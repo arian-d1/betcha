@@ -52,6 +52,12 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
   const isOwner = auth.user?.id === contract.maker.id;
   const isTrusted = contract.maker.times_banned == 0;
 
+  const hasUserClaimed = isOwner 
+    ? contract.maker_claim !== null 
+    : auth.user?.id === contract.taker?.id 
+      ? contract.taker_claim !== null 
+      : false;
+
   // Accept Wager Handler
   // REQUIRE: User must have sufficient funds
   // EFFECT: Accepting wager will set the currently logged in user as the taker
@@ -274,26 +280,27 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
           {/* LEFT SIDE: WIN/LOSE BUTTONS */}
           {contract.status === "active" && (isOwner || auth.user?.id === contract.taker?.id) && (
             <div className="flex flex-col items-start gap-2 mr-auto">
-              {/* Check if current user has already claimed */}
-              {!(contract.maker || contract.taker) ? (
-                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground italic animate-pulse">
+              {hasUserClaimed ? (
+                /* SHOW THIS IF USER HAS ALREADY SENT A CLAIM */
+                <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase italic tracking-wider animate-pulse">
                   <Loader2 className="h-3 w-3 animate-spin" />
-                  Waiting for opponent...
+                  Awaiting Opponent Response...
                 </div>
               ) : (
+                /* SHOW BUTTONS ONLY IF NO CLAIM SENT YET */
                 <div className="flex gap-2">
                   <Button 
                     variant="destructive" 
                     className="px-4 font-bold uppercase text-[10px] tracking-widest shadow-lg"
                     disabled={isSubmitting}
-                    onClick={() => submitClaim(false)} // User says: "I Lose"
+                    onClick={() => submitClaim(false)} 
                   >
                     {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : "I Lose"}
                   </Button>
                   <Button 
                     className="px-4 bg-green-600 hover:bg-green-700 text-white font-bold uppercase text-[10px] tracking-widest shadow-lg"
                     disabled={isSubmitting}
-                    onClick={() => submitClaim(true)} // User says: "I Win"
+                    onClick={() => submitClaim(true)}
                   >
                     {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : "I Win"}
                   </Button>
@@ -302,7 +309,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
             </div>
           )}
 
-          {/* RIGHT SIDE: CANCEL/ACCEPT BUTTONS */}
+          {/* RIGHT SIDE: CANCEL/CLOSE BUTTONS */}
           <div className="flex flex-row gap-3 ml-auto">
             <DialogTrigger asChild>
               <Button variant="outline" className="flex-1 sm:flex-none px-8">

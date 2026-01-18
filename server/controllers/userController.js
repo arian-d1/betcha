@@ -13,8 +13,12 @@
 
 const crypto = require("crypto");
 const db = require("../db/queries");
-const Filter = require("bad-words");
-const profanityFilter = new Filter();
+const leoProfanity = require("leo-profanity");
+
+function hasProfanity(text) {
+  if (typeof text !== "string") return false;
+  return leoProfanity.check(text);
+}
 
 function mapUser(u) {
   return {
@@ -52,13 +56,13 @@ async function createContract(req, res) {
         error: "contractDescription is required (string)",
       });
     }
-    if (profanityFilter.isProfane(contractTitle)) {
+    if (hasProfanity(contractTitle)) {
       return res.status(400).json({
         success: false,
         error: "Contract title contains blocked language",
       }); 
     }
-    if (profanityFilter.isProfane(description)) {
+    if (hasProfanity(contractDescription)) {
       return res.status(400).json({
         success: false,
         error: "Contract description contains blocked language",
@@ -201,11 +205,8 @@ async function updateUsername(req, res) {
     }
 
     // profanity filtering
-    if (profanityFilter.isProfane(nextUsername)) {
-      return res.status(400).json({
-        success: false,
-        error: "username contains blocked language",
-      });
+    if (hasProfanity(nextUsername)) {
+      return res.status(400).json({ success: false, error: "username contains blocked language" });
     }
 
     // Check if username is already taken (by someone else)

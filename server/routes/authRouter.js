@@ -1,9 +1,20 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
+const db = require("../db/queries");
 
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+function splitName(payload) {
+  // Prefer Google's structured fields when available
+  const first = payload.given_name || (payload.name ? payload.name.split(" ")[0] : null);
+  const last =
+    payload.family_name ||
+    (payload.name ? payload.name.split(" ").slice(1).join(" ") : null) ||
+    null;
+  return { firstName: first, lastName: last };
+}
 
 router.post("/google", async (req, res) => {
   res.set('IdP-Response', 'true');
@@ -23,6 +34,28 @@ router.post("/google", async (req, res) => {
 
     if (!payload) {
       return res.status(401).json({ error: "Invalid Google token" });
+    }
+
+    let dbUser = await db.getUserByEmail(payload.email);
+
+    if (!dbUser) {
+      const { firstName, lastName } = splitName(payload);
+
+      const newUser = {
+        uuid: payload.sub, // use Google sub as stable unique id
+        firstName,
+        lastName,
+        username: "",
+        email: payload.email,
+        balance: 0,
+        accountCreatedAt: new Date(),
+        exp: 0,
+        level: 1,
+        timesBanned: 0,
+      };
+
+      await db.createUser(newUser);
+      dbUser = await db.getUser(payload.sub);
     }
 
     const user = {

@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "./ThemeProvider.tsx";
+import { NotificationStack } from "./NotificationStack.tsx";
 
 
 export function Navbar() {
@@ -60,6 +61,20 @@ export function Navbar() {
 
       {/* Right side: Balance + Profile */}
       <div className="flex items-center gap-4">
+
+        <Link
+          to={
+            auth.isAuthenticated
+              ? `/user/${auth.user?.id ?? "login"}`
+              : `/user/login`
+          }
+        >
+          <Button variant="ghost" size="sm" className="gap-2">
+            <User2 className="h-4 w-4" />
+            <span className="hidden sm:inline">My Profile</span>
+          </Button>
+        </Link>
+        
         {auth.isAuthenticated && (
           <Dialog open={walletAction !== null} onOpenChange={(open) => !open && setWalletAction(null)}>
             <DropdownMenu>
@@ -94,19 +109,8 @@ export function Navbar() {
           </Dialog>
         )}
         
-        <Link
-          to={
-            auth.isAuthenticated
-              ? `/user/${auth.user?.id ?? "login"}`
-              : `/user/login`
-          }
-        >
-          <Button variant="ghost" size="sm" className="gap-2">
-            <User2 className="h-4 w-4" />
-            <span className="hidden sm:inline">My Profile</span>
-          </Button>
-        </Link>
-
+        {auth.isAuthenticated ? <NotificationStack notifications={[]} onAction={() => {}}  /> : <></>}
+          
         <ModeToggle />
       </div>
     </nav>

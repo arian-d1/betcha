@@ -5,6 +5,7 @@ import { User2, Wallet, Swords, Info } from "lucide-react";
 import { useContext } from "react";
 import { UserContext } from "./contexts/UserContext";
 import Logo from "../assets/vector/default-monochrome-black.svg";
+import ModeToggle from "./ModeToggle";
 // In a real app, you'd get this from an Auth Context
 export function Navbar() {
   const auth = useContext(UserContext);
@@ -16,6 +17,17 @@ export function Navbar() {
           <img src={Logo} alt="Betcha!" className="h-8 w-auto" />
         </Link>
 
+         <Link to="/about">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="gap-2 font-bold tracking-wide uppercase text-lg leading-none border border-transparent transition-colors hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary))]"
+          >
+            <Info className="h-5 w-5" />
+            About
+          </Button>
+        </Link>
+
         <Link to="/contracts">
           <Button
             variant="secondary"
@@ -24,17 +36,6 @@ export function Navbar() {
           >
             <Swords className="h-5 w-5" />
             Arena
-          </Button>
-        </Link>
-
-        <Link to="/about">
-          <Button
-            variant="secondary"
-            size="lg"
-            className="gap-2 font-bold tracking-wide uppercase text-lg leading-none border border-transparent transition-colors hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary))]"
-          >
-            <Info className="h-5 w-5" />
-            About
           </Button>
         </Link>
 
@@ -53,7 +54,7 @@ export function Navbar() {
             ""
           )}
         </div>
-
+        
         <Link
           to={
             auth.isAuthenticated
@@ -66,6 +67,8 @@ export function Navbar() {
             <span className="hidden sm:inline">My Profile</span>
           </Button>
         </Link>
+
+        <ModeToggle />
       </div>
     </nav>
   );

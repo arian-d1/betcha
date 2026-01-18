@@ -12,31 +12,34 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import UserProfile from "./components/UserProfile";
 import { UserProvider } from "./components/contexts/UserContext";
 import About from "./components/About";
+import ThemeProvider from "./components/ThemeProvider";
 
 export default function App() {
   return (
-    <UserProvider>
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="*" element={<Navigate to="/login" replace />} />
-          <Route path="/" element={<Navigate to="/contracts" replace />} />
-          <Route path="/about" element={<About></About>}/>
-          <Route
-            path="/login"
-            element={<LoginPage />}
-          />
-          <Route path="/contracts" element={<ContractFeed></ContractFeed>} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/user/:id" element={<UserProfile></UserProfile>} />
+    <ThemeProvider>
+      <UserProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to="/contracts" replace />} />
+            <Route path="/about" element={<About></About>}/>
             <Route
-              path="/contracts/:id"
-              element={<ContractFeed></ContractFeed>}
+              path="/login"
+              element={<LoginPage />}
             />
+            <Route path="/contracts" element={<ContractFeed></ContractFeed>} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/user/:id" element={<UserProfile></UserProfile>} />
+              <Route
+                path="/contracts/:id"
+                element={<ContractFeed></ContractFeed>}
+              />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  </UserProvider>
+        </Routes>
+      </BrowserRouter>
+    </UserProvider>
+  </ThemeProvider>
   );
 }

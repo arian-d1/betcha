@@ -30,6 +30,7 @@ import api from "@/api/axios";
 export default function ContractCard({ contract, onDelete }: { contract: Contract, onDelete?: (id: string) => void }) {
   
   const auth = useContext(UserContext);
+  
   const STATUS_CONFIG: Record<
   ContractStatus,
   {
@@ -43,8 +44,11 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
     resolved: { label: "View Result", variant: "outline", isDisabled: false },
     cancelled: { label: "Voided", variant: "ghost", isDisabled: true },
   };
+
   const config = STATUS_CONFIG[contract.status];
+  const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isOwner = auth.user?.id === contract.maker.id;
   const isTrusted = contract.maker.times_banned == 0;
 
@@ -53,16 +57,22 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
   // EFFECT: Accepting wager will set the currently logged in user as the taker
   //         and change contract status to "active" to the backend/database.
   const acceptWager = async (contractId: string, takingUserId: string) => {
+    setError("");
+    setIsSubmitting(true);
+
     try {
       const response = await api.patch(`/contracts/${contractId}/claim`, {
         claimingUserId: takingUserId
       });
       if (response.data.success) {
-        contract = response.data.data;
-        auth.user!.balance = response.data.balance;
+        window.location.reload();
       }
     } catch (e: any) {
-      console.error("Error accepting wager:", e.response?.data.error);
+      const errorMsg = e.response?.data.error || "Failed to accept wager";
+      setError(errorMsg);
+      console.error("Error accepting wager:", errorMsg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -212,6 +222,14 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
                </p>
              </div>
           </div>
+
+          {/* ERROR ALERT SECTION */}
+          {error && (
+            <div className="mt-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-1">
+              <ShieldAlert className="h-5 w-5 shrink-0" />
+              <p className="font-medium">{error}</p>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="flex flex-row gap-3 sm:justify-end border-t pt-6">
@@ -224,14 +242,14 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
           
           {/* Only show the Accept button if the status is 'open' */}
           {contract.status === "open" && (
-            <DialogTrigger asChild>
+
               <Button 
                 className="flex-1 sm:flex-none px-8 bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 disabled:bg-muted disabled:text-muted-foreground"
 
                 // REQUIRE: User must have sufficient funds
                 // EFFECT: Accepting wager will set the currently logged in user as the taker
                 //       and change contract status to "active" to the backend/database.
-                onClick={() => acceptWager(contract.id, auth.user!.id)}
+                onClick={() => {auth.user != null ? acceptWager(contract.id, auth.user.id) : setError("Couldnt go through")}}
 
 
                 // Logic: Disabled if already disabled in config (e.g., user not logged in)
@@ -239,7 +257,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
               >
                 {auth.isAuthenticated ? "Accept Wager" : "Login to Accept"}
               </Button>
-            </DialogTrigger>
+
           )}
         </DialogFooter>
       </DialogContent>

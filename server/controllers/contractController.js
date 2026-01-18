@@ -194,9 +194,8 @@ async function claimContract(req, res) {
 
     // 3) Claim the contract (sets taker + status)
     const result = await db.claimContract(contractId, claimingUserId);
-    const updated = result?.value ?? null;
+    const updated = result;
 
-    // If claim failed (race condition), refund the user (best-effort)
     if (!updated) {
       await db.updateUser(claimingUserId, { balance: currentBalance });
       return res.status(409).json({

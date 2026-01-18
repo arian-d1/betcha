@@ -38,6 +38,7 @@ export default function UserProfile() {
   useEffect(() => {
     fetchContracts(setIsLoading, setContracts);
   }, []);
+  console.log(contracts)
 
   const placedWagers = contracts.filter(c => c.maker.id === auth.user?.id);
   const takenWagers = contracts.filter(c => c.taker?.id === auth.user?.id);
@@ -50,6 +51,7 @@ export default function UserProfile() {
   const totalWinAmount = wins.reduce((sum, c) => sum + c.amount, 0);
   const totalLossAmount = losses.reduce((sum, c) => sum + c.amount, 0);
   const netPnL = totalWinAmount - totalLossAmount;
+  const openCount = contracts.filter((c) => c.status === "open" && (c.maker.id === auth.user?.id || c.taker?.id === auth.user?.id)).length;
 
   if (auth.user == null) return <UnauthorizedPage />;
   if (auth.user.username.trim() === "") return <SetUsernamePage />;
@@ -142,7 +144,7 @@ export default function UserProfile() {
                   <div className="flex items-center gap-2 text-sm">
                     <Trophy className="h-4 w-4 text-yellow-500" /> Total Wagers
                   </div>
-                  <span className="font-bold">{contracts.length}</span>
+                  <span className="font-bold">{takenWagers.length + placedWagers.length}</span>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -152,6 +154,14 @@ export default function UserProfile() {
                   <span className="font-bold">
                     {contracts.filter((c) => c.status === "active").length}
                   </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-sm">
+                    {/* Using a different icon or color to distinguish from 'Active' */}
+                    <History className="h-4 w-4 text-cyan-500" /> Open Wagers
+                  </div>
+                  <span className="font-bold">{openCount}</span>
                 </div>
               </CardContent>
             </Card>

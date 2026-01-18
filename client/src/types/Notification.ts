@@ -7,4 +7,5 @@ export interface Notification {
     contract_id: string;
     amount: number;
     status: NotificationStatus;
+    created_at: string;
 }

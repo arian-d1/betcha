@@ -14,6 +14,14 @@ async function getUsersCollection() {
   return client.db(dbName).collection(usersCollectionName);
 }
 
+// Get notifications collection
+async function getNotificationsCollection() {
+  if (!client.isConnected?.()) {
+    await client.connect();
+  }
+  return client.db(dbName).collection(notificationsCollectionName);
+}
+
 // CREATE — Insert a new user
 async function createUser(user) {
   const users = await getUsersCollection();
@@ -163,6 +171,57 @@ async function claimContract(id, claimingUserId) {
   );
 }
 
+// CREATE — Insert a new notification
+async function createNotification(notification) {
+  const notifications = await getNotificationsCollection();
+  return notifications.insertOne({
+    n_id: notification.n_id,
+    from_uid: notification.from_uid,
+    to_uid: notification.to_uid,
+    contract_id: notification.contract_id,
+    amount: Number(notification.amount),
+    status: notification.status ?? "pending",
+    created_at: notification.created_at ?? new Date(),
+  });
+}
+
+// READ — List notifications (optionally filtered)
+async function listNotifications({ to_uid, from_uid, contract_id, status, limit = 50 } = {}) {
+  const notifications = await getNotificationsCollection();
+
+  const query = {};
+  if (to_uid) query.to_uid = to_uid;
+  if (from_uid) query.from_uid = from_uid;
+  if (contract_id) query.contract_id = contract_id;
+  if (status) query.status = status;
+
+  const lim = Math.max(1, Math.min(Number(limit) || 50, 200));
+
+  const data = await notifications
+    .find(query)
+    .sort({ created_at: -1 })
+    .limit(lim)
+    .toArray();
+
+  return data;
+}
+
+// READ — Get notification by n_id
+async function getNotification(n_id) {
+  const notifications = await getNotificationsCollection();
+  return notifications.findOne({ n_id });
+}
+
+// PATCH — Update status by notification id
+async function updateNotificationStatus(n_id, status) {
+  const notifications = await getNotificationsCollection();
+  return notifications.findOneAndUpdate(
+    { n_id },
+    { $set: { status, updated_at: new Date() } },
+    { returnDocument: "after" },
+  );
+}
+
 module.exports = {
   createUser,
   getUser,
@@ -177,4 +236,8 @@ module.exports = {
   updateContract,
   deleteContract,
   claimContract,
+  createNotification,
+  listNotifications,
+  getNotification, 
+  updateNotificationStatus,
 };

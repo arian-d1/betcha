@@ -28,6 +28,8 @@ async function createUser(user) {
     exp: user.exp,
     level: user.level,
     timesBanned: user.timesBanned,
+    makerClaim: user.makerClaim,
+    takenClaim: user.takerClaim,
   });
 }
 

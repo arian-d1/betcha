@@ -80,13 +80,7 @@ async function getContractById(req, res) {
         .json({ success: false, error: "Missing contractId" });
     }
 
-    const contract = await db.getContract(contractId);
-
-    if (!contract) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Contract not found" });
-    }
+    contract = await db.getContract(contractId);
 
     return res.json({
       success: true,

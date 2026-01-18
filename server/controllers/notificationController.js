@@ -47,7 +47,7 @@ async function getNotifications(req, res) {
   }
 }
 
-// PUT /notifications
+// PUT /notification
 // body: { from_uid, to_uid, contract_id, amount, status? }
 async function createNotification(req, res) {
   try {
@@ -101,12 +101,13 @@ async function createNotification(req, res) {
   }
 }
 
-// PATCH /notifications/:notificationId
+// PATCH /notification/:notificationId
 // body: { status }
 async function patchNotificationStatus(req, res) {
   try {
     const { notificationId } = req.params;
     const { status } = req.body;
+    console.log("HERE" + notificationId);
 
     if (!notificationId) {
       return res.status(400).json({ success: false, error: "Missing notificationId" });

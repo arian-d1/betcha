@@ -9,28 +9,43 @@ export function NotificationManager() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // 1. GET Notifications
-  const fetchNotifications = async () => {
+  const fetchData = async () => {
     if (!auth.user?.id) return;
     try {
-      // Fetch notifications sent TO the current user that are still pending
-      const response = await api.get("/notification", {
-        params: { 
-          to_uid: auth.user.id,
-          status: "pending" 
-        }
-      });
-      if (response.data.success) {
-        setNotifications(response.data.data);
+      // 1. Run both requests in parallel for better performance
+      const [notificationsRes, contractsRes] = await Promise.all([
+        api.get("/notification", {
+          params: { to_uid: auth.user.id, status: "pending" }
+        }),
+        api.get("/contracts")
+      ]);
+
+      if (notificationsRes.data.success && contractsRes.data.success) {
+        const rawNotifications = notificationsRes.data.data;
+        const allContracts = contractsRes.data.data;
+
+        // 2. Create a lookup map for O(1) title retrieval
+        const contractMap = new Map(
+          allContracts.map((c: any) => [c.id, c.title])
+        );
+
+        // 3. Hydrate notifications with the contract title
+        const hydrated = rawNotifications.map((n: Notification) => ({
+          ...n,
+          contract_title: contractMap.get(n.contract_id) || "Unknown Contract"
+        }));
+
+        setNotifications(hydrated);
       }
     } catch (err) {
-      console.error("Failed to fetch notifications:", err);
+      console.error("Failed to fetch data:", err);
     }
   };
 
   useEffect(() => {
-    fetchNotifications();
+    fetchData();
     // Optional: Poll every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, [auth.user?.id]);
 

@@ -95,7 +95,7 @@ async function getUserProfile(req, res) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    return res.json({ success: true, data: user });
+    return res.json({ success: true, data: mapUser(user) });
   } catch (e) {
     return res.status(500).json({
       success: false,
@@ -120,7 +120,7 @@ async function getUserByEmail(req, res) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    return res.json({ success: true, data: user });
+    return res.json({ success: true, data: mapUser(user) });
   } catch (e) {
     return res.status(500).json({
       success: false,

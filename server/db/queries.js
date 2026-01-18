@@ -21,6 +21,7 @@ async function createUser(user) {
     uuid: user.uuid,
     firstName: user.firstName,
     lastName: user.lastName,
+    username: user.username,
     email: user.email,
     balance: Number(user.balance),
     accountCreatedAt: user.accountCreatedAt ?? new Date(),

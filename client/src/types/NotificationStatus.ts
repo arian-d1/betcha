@@ -1,0 +1,1 @@
+export type NotificationStatus = "pending" | "accepted" | "declined";

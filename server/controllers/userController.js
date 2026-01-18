@@ -54,9 +54,29 @@ async function createContract(req, res) {
     if (contractAmount == null || Number.isNaN(amountNum)) {
       return res
         .status(400)
-        .json({ success: false, error: "contractAmount is required (number)" });
+        .json({ success: false, error: "contractAmount is required (number)" 
+      });
     }
 
+    // 1) ensure user exists + has enough balance
+    const user = await db.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const currentBalance = Number(user.balance ?? 0);
+    if (currentBalance < amountNum) {
+      return res.status(400).json({
+        success: false,
+        error: "Insufficient balance to create this contract",
+      });
+    }
+
+    // 2) deduct balance
+    const newBalance = currentBalance - amountNum;
+    await db.updateUser(userId, { balance: newBalance });
+
+    // 3) create contract
     const contract = {
       id: crypto.randomUUID(),
       maker: userId,

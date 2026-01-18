@@ -11,21 +11,20 @@ import {
   Trophy,
   LogOut,
 } from "lucide-react";
-import { MOCK_CONTRACTS } from "@/mock-data/mock-contracts";
 import ContractCard from "@/components/ContractCard";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { UserContext } from "./contexts/UserContext";
 import UnauthorizedPage from "./UnauthorizedPage";
 import SetUsernamePage from "./SetUsernamePage"; 
-
+import type { Contract } from "@/types/Contract";
+import api from "@/api/axios";
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 export default function UserProfile() {
   const auth = useContext(UserContext);
-  const navigate = useNavigate();
-  // In a real app, you'd fetch this from your DB using the userid
-  // For now, we'll find the user from our mock contracts
+  const [contracts, setContracts] = useState<Array<Contract>>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   if (auth.user == null) {
     return <UnauthorizedPage />;
   }
@@ -34,13 +33,48 @@ export default function UserProfile() {
     return <SetUsernamePage />;
   }
 
-  const userContracts =
-    auth.user == null
-      ? []
-      : MOCK_CONTRACTS.filter(
-          (c) => c.maker.id === auth.user.id || c.taker?.id === auth.user.id,
+  useEffect(() => {
+    const fetchContracts = async () => {
+      try {
+        setIsLoading(true);
+
+        const response = await api.get("/contracts");
+        const rawContracts = response.data.data || response.data;
+
+        if (Array.isArray(rawContracts)) {
+        // Hydrate each contract by fetching its maker's profile
+        const hydratedContracts = await Promise.all(
+          rawContracts.map(async (contract: any) => {
+            try {
+              // The contract 'maker' is currently just an ID string
+              const userId = contract.maker; 
+              
+              // Fetch the full user profile from your user router
+              const userRes = await api.get(`/user/${userId}`);
+              
+              // Return the contract but replace the maker string with the user object
+              return {
+                ...contract,
+                maker: userRes.data.data // This contains username, times_banned, etc.
+              };
+            } catch (err) {
+              console.error(`Failed to fetch profile for user ${contract.maker}`, err);
+              return contract; // Fallback to original if user fetch fails
+            }
+          })
         );
-      
+
+        setContracts(hydratedContracts);
+      }
+    } catch (error) {
+      console.error("Error fetching contracts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchContracts();
+}, []);
 
     return (
       <div className="container mx-auto py-10 px-4 max-w-5xl">
@@ -107,14 +141,14 @@ export default function UserProfile() {
                   <div className="flex items-center gap-2 text-sm">
                     <Trophy className="h-4 w-4 text-yellow-500" /> Total Wagers
                   </div>
-                  <span className="font-bold">{userContracts.length}</span>
+                  <span className="font-bold">{contracts.length}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2 text-sm">
                     <History className="h-4 w-4 text-blue-500" /> Active
                   </div>
                   <span className="font-bold">
-                    {userContracts.filter((c) => c.status === "active").length}
+                    {contracts.filter((c) => c.status === "active").length}
                   </span>
                 </div>
               </CardContent>
@@ -130,18 +164,29 @@ export default function UserProfile() {
               </TabsList>
 
               <TabsContent value="activity" className="space-y-6">
+              {isLoading ? (
+                /* LOADER WHEEL SECTION */
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                  <p className="text-muted-foreground animate-pulse text-sm">
+                    Retrieving your wagers...
+                  </p>
+                </div>
+              ) : (
+                /* ACTUAL CONTENT */
                 <div className="grid grid-cols-1 gap-4">
-                  {userContracts.length > 0 ? (
-                    userContracts.map((c) => (
+                  {contracts.length > 0 ? (
+                    contracts.map((c) => (
                       <ContractCard key={c.id} contract={c} />
                     ))
                   ) : (
-                    <p className="text-center py-10 text-muted-foreground">
-                      No recent wagers.
+                    <p className="text-center py-10 text-muted-foreground italic border-2 border-dashed rounded-lg">
+                      No recent wagers found.
                     </p>
                   )}
                 </div>
-              </TabsContent>
+              )}
+            </TabsContent>
 
               <TabsContent value="stats">
                 <Card>

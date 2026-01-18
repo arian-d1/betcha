@@ -25,25 +25,7 @@ import {
 import { useContext } from "react";
 import { UserContext } from "./contexts/UserContext";
 
-import { useContext } from "react";
-import { UserContext } from "./contexts/UserContext";
 
-
-export default function ContractCard({ contract }: { contract: Contract }) {
-  const auth = useContext(UserContext);
-  const STATUS_CONFIG: Record<
-    ContractStatus,
-    {
-      label: string;
-      variant: "default" | "secondary" | "outline" | "ghost";
-      isDisabled: boolean;
-    }
-  > = {
-    open: { label: "Accept Wager", variant: "default", isDisabled: !auth.isAuthenticated },
-    active: { label: "In Progress", variant: "secondary", isDisabled: true },
-    resolved: { label: "View Result", variant: "outline", isDisabled: false },
-    cancelled: { label: "Voided", variant: "ghost", isDisabled: true },
-  };
 export default function ContractCard({ contract }: { contract: Contract }) {
   const auth = useContext(UserContext);
   const STATUS_CONFIG: Record<

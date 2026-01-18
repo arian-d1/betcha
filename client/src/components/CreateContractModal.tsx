@@ -42,6 +42,7 @@ export default function CreateContractModal({ onContractCreated, isDisabled }: {
         if (response.data.success) {
             // The backend returns the new contract in response.data.data
             const createdContract = response.data.data;
+            console.log(createdContract)
             
             // Pass the new contract back to the feed to update UI
             onContractCreated(createdContract);
@@ -80,7 +81,7 @@ export default function CreateContractModal({ onContractCreated, isDisabled }: {
                 {error}
             </div> 
         )}  
-        
+
         <form onSubmit={handleSubmit} className="space-y-6 pt-4">
           <div className="space-y-2">
             <Label htmlFor="title">Contract Title</Label>

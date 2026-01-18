@@ -174,26 +174,27 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
       
         <Card className="relative w-full flex flex-col h-full transition-all hover:border-primary/50 overflow-hidden shadow-sm hover:shadow-md">
           {/* Delete Button - Absolute Positioned */}
-          {isOwner && contract.status === "open" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 z-10"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}
-            </Button>
-          )}
+        
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b bg-muted/5">
             <div className="flex items-center text-sm font-bold text-green-600">
               <Coins className="mr-1.5 h-4 w-4" />${contract.amount.toFixed(2)}
             </div>
 
+            {isOwner && contract.status === "open" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </Button>
+            )}
           </CardHeader>
 
           <CardContent className="pt-6 flex-1">

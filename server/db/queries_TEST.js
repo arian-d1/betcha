@@ -14,6 +14,7 @@ async function runTests() {
     uuid: testUuid,
     firstName: "Jack",
     lastName: "Smith",
+    username: "JSmithsonian",
     email: "jack.smith@no.com",
     balance: 0,
     accountCreatedAt: new Date("1900-01-01T00:00:00Z")

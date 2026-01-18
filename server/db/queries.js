@@ -21,6 +21,7 @@ async function createUser(user) {
     uuid: user.uuid,
     firstName: user.firstName,
     lastName: user.lastName,
+    username: user.username,
     email: user.email,
     balance: Number(user.balance),
     accountCreatedAt: user.accountCreatedAt ?? new Date(),
@@ -34,6 +35,17 @@ async function createUser(user) {
 async function getUser(uuid) {
   const users = await getUsersCollection();
   return users.findOne({ uuid });
+}
+
+async function getUserByEmail(email) {
+  const users = await getUsersCollection();
+  return users.findOne({ email });
+}
+
+// Optional (only if you actually store username in users)
+async function getUserByUsername(username) {
+  const users = await getUsersCollection();
+  return users.findOne({ username });
 }
 
 // UPDATE — Update a user by UUID
@@ -71,12 +83,50 @@ async function createContract(contract) {
         created_at: contract.created_at ?? new Date()
     });
   }
+
+async function listPublicContracts({ page = 1, limit = 20, search, username }) {
+  const contracts = await getContractsCollection();
+  const query = { status: "open" };
+
+  if (username) {
+    const u = await getUserByUsername(username);
+    if (!u?.uuid) return { data: [], total: 0 };
+    query.maker = u.uuid;
+  }
+
+  if (search) {
+    const or = [
+      { title: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
+    ];
+    const asNum = Number(search);
+    if (!Number.isNaN(asNum)) or.push({ amount: asNum });
+    query.$or = or;
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [data, total] = await Promise.all([
+    contracts.find(query).sort({ created_at: -1 }).skip(skip).limit(limit).toArray(),
+    contracts.countDocuments(query),
+  ]);
+
+  return { data, total };
+}
   
   // READ — Get a user by UUID
   async function getContract(id) {
     const contracts = await getContractsCollection();
     return contracts.findOne({ id });
   }
+
+  async function getContractsByUser(userId) {
+  const contracts = await getContractsCollection();
+  return contracts
+    .find({ $or: [{ maker: userId }, { taker: userId }] })
+    .sort({ created_at: -1 })
+    .toArray();
+}
   
   // UPDATE — Update a user by UUID
   async function updateContract(id, updates) {
@@ -90,4 +140,33 @@ async function createContract(contract) {
     return contracts.deleteOne({ id });
   }
 
-module.exports = { createUser, getUser, updateUser, deleteUser, createContract, getContract, updateContract, deleteContract};
+async function claimContract(id, claimingUserId) {
+  const contracts = await getContractsCollection();
+
+  // Only claim if open AND unclaimed
+  return contracts.findOneAndUpdate(
+    {
+      id,
+      status: "open",
+      $or: [{ taker: null }, { taker: { $exists: false } }],
+    },
+    { $set: { taker: claimingUserId, status: "claimed" } },
+    { returnDocument: "after" },
+  );
+}
+
+module.exports = { 
+  createUser, 
+  getUser, 
+  getUserByEmail,
+  getUserByUsername,
+  updateUser, 
+  deleteUser, 
+  createContract, 
+  listPublicContracts,
+  getContract, 
+  getContractsByUser,
+  updateContract, 
+  deleteContract,
+  claimContract
+};

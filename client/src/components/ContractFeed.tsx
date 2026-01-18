@@ -8,6 +8,7 @@ import { UserContext } from "./contexts/UserContext";
 import api from "@/api/axios";
 import { Loader2 } from "lucide-react";
 import ChatWidget from "./ChatWidget";
+import fetchContracts from "@/lib/fetchContracts";
 
 export default function ContractFeed() {
   const [contracts, setContracts] = useState<Array<Contract>>([]);
@@ -17,50 +18,8 @@ export default function ContractFeed() {
   const auth = useContext(UserContext);
 
   useEffect(() => {
-    const fetchContracts = async () => {
-      try {
-        setIsLoading(true);
-
-        const response = await api.get("/contracts");
-        const rawContracts = response.data.data || response.data;
-
-        if (Array.isArray(rawContracts)) {
-        // Hydrate each contract by fetching its maker's profile
-        const hydratedContracts = await Promise.all(
-          rawContracts.map(async (contract: any) => {
-            try {
-              // The contract 'maker' is currently just an ID string
-              const userId = contract.maker; 
-              
-              // Fetch the full user profile from your user router
-              const userRes = await api.get(`/user/${userId}`);
-              const taker = contract.taker ? await api.get(`/user/${contract.taker}`) : null;
-              
-              // Return the contract but replace the maker string with the user object
-              return {
-                ...contract,
-                maker: userRes.data.data, // This contains username, times_banned, etc.
-                taker: taker ? taker.data.data : taker
-              };
-            } catch (err) {
-              console.error(`Failed to fetch profile for user ${contract.maker}`, err);
-              return contract; // Fallback to original if user fetch fails
-            }
-          })
-        );
-
-        setContracts(hydratedContracts);
-        console.log(hydratedContracts);
-      }
-    } catch (error) {
-      console.error("Error fetching contracts:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  fetchContracts();
-}, []);
+      fetchContracts(setIsLoading, setContracts);
+    }, []);
 
   const filteredContracts = contracts.filter((contract) => {
     if (activeTab === "all") return true;

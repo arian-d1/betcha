@@ -79,6 +79,11 @@ export default function UserProfile() {
 
   const placedWagers = contracts.filter(c => c.maker.id === auth.user?.id);
   const takenWagers = contracts.filter(c => c.taker?.id === auth.user?.id);
+  const resolvedContracts = contracts.filter(
+    (c) => c.status === "resolved" && (c.maker.id === auth.user?.id || c.taker?.id === auth.user?.id)
+  );
+  const wins = resolvedContracts.filter((c) => c.winner === auth.user?.id);
+  const losses = resolvedContracts.filter((c) => c.winner !== auth.user?.id);
 
   if (auth.user == null) return <UnauthorizedPage />;
   if (auth.user.username.trim() === "") return <SetUsernamePage />;
@@ -144,6 +149,20 @@ export default function UserProfile() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                 <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <Trophy className="h-4 w-4" /> Wins
+                  </div>
+                  <span className="font-bold text-green-600">{wins.length}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-sm text-red-500">
+                    <ShieldAlert className="h-4 w-4" /> Losses
+                  </div>
+                  <span className="font-bold text-red-500">{losses.length}</span>
+                </div>
+
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2 text-sm">
                     <Trophy className="h-4 w-4 text-yellow-500" /> Total Wagers
@@ -165,7 +184,9 @@ export default function UserProfile() {
           {/* Main Content: User's History */}
           <div className="md:col-span-2">
             <Tabs defaultValue="placed" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsTrigger value="wins">Wins ({wins.length})</TabsTrigger>
+                <TabsTrigger value="losses">Losses ({losses.length})</TabsTrigger>
                 <TabsTrigger value="placed">Placed ({placedWagers.length})</TabsTrigger>
                 <TabsTrigger value="taken">Taken ({takenWagers.length})</TabsTrigger>
               </TabsList>
@@ -194,6 +215,38 @@ export default function UserProfile() {
                 ) : (
                   <div className="text-center py-10 border-2 border-dashed rounded-lg text-muted-foreground">
                     No wagers taken.
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="wins" className="space-y-4">
+                {isLoading ? (
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="animate-spin text-primary" />
+                  </div>
+                ) : wins.length > 0 ? (
+                  wins.map((c) => (
+                    <ContractCard key={c.id} contract={c} />
+                  ))
+                ) : (
+                  <div className="text-center py-10 border-2 border-dashed rounded-lg text-muted-foreground">
+                    No wins yet.
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="losses" className="space-y-4">
+                {isLoading ? (
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="animate-spin text-primary" />
+                  </div>
+                ) : losses.length > 0 ? (
+                  losses.map((c) => (
+                    <ContractCard key={c.id} contract={c} />
+                  ))
+                ) : (
+                  <div className="text-center py-10 border-2 border-dashed rounded-lg text-muted-foreground">
+                    No losses yet.
                   </div>
                 )}
               </TabsContent>

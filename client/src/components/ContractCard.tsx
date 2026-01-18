@@ -93,6 +93,34 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
     }
   };
 
+  const submitClaim = async (choice: boolean) => {
+    const message = choice 
+      ? "ARE YOU SURE? Confirming a WIN is IRREVERSIBLE. Lying will result in a BAN." 
+      : "ARE YOU SURE? Confirming a LOSS is IRREVERSIBLE. Lying will result in a BAN.";
+
+    if (!window.confirm(message)) return;
+
+    setIsSubmitting(true);
+    setError("");
+    
+    try {
+      // Matches your backend: { userId, claim }
+      const response = await api.patch(`/contracts/${contract.id}/resolve`, { 
+        userId: auth.user?.id,
+        claim: choice 
+      });
+      
+      if (response.data.success) {
+        window.location.reload(); 
+      }
+    } catch (e: any) {
+      const errorMsg = e.response?.data.error || "Failed to submit claim";
+      setError(errorMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog>
       {/* The Trigger is the card itself */}
@@ -118,9 +146,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
             <div className="flex items-center text-sm font-bold text-green-600">
               <Coins className="mr-1.5 h-4 w-4" />${contract.amount.toFixed(2)}
             </div>
-            {/* <Badge variant="outline" className="text-[10px] font-mono uppercase px-2 py-0">
-              {contract.id}
-            </Badge> */}
+
           </CardHeader>
 
           <CardContent className="pt-6 flex-1">
@@ -244,33 +270,59 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
           )}
         </div>
 
-        <DialogFooter className="flex flex-row gap-3 sm:justify-end border-t pt-6">
-          {/* Cancel Button - White/Outline */}
-          <DialogTrigger asChild>
-            <Button variant="outline" className="flex-1 sm:flex-none px-8">
-              {contract.status === "open" ? "Cancel" : "Close"}
-            </Button>
-          </DialogTrigger>
-          
-          {/* Only show the Accept button if the status is 'open' */}
-          {contract.status === "open" && (
+        <DialogFooter className="flex flex-row items-center justify-between gap-3 border-t pt-6">
+          {/* LEFT SIDE: WIN/LOSE BUTTONS */}
+          {contract.status === "active" && (isOwner || auth.user?.id === contract.taker?.id) && (
+            <div className="flex flex-col items-start gap-2 mr-auto">
+              {/* Check if current user has already claimed */}
+              {!(contract.maker || contract.taker) ? (
+                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground italic animate-pulse">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Waiting for opponent...
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button 
+                    variant="destructive" 
+                    className="px-4 font-bold uppercase text-[10px] tracking-widest shadow-lg"
+                    disabled={isSubmitting}
+                    onClick={() => submitClaim(false)} // User says: "I Lose"
+                  >
+                    {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : "I Lose"}
+                  </Button>
+                  <Button 
+                    className="px-4 bg-green-600 hover:bg-green-700 text-white font-bold uppercase text-[10px] tracking-widest shadow-lg"
+                    disabled={isSubmitting}
+                    onClick={() => submitClaim(true)} // User says: "I Win"
+                  >
+                    {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : "I Win"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
+          {/* RIGHT SIDE: CANCEL/ACCEPT BUTTONS */}
+          <div className="flex flex-row gap-3 ml-auto">
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex-1 sm:flex-none px-8">
+                {contract.status === "open" ? "Cancel" : "Close"}
+              </Button>
+            </DialogTrigger>
+            
+            {contract.status === "open" && (
               <Button 
                 className="flex-1 sm:flex-none px-8 bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 disabled:bg-muted disabled:text-muted-foreground"
-
-                // REQUIRE: User must have sufficient funds
-                // EFFECT: Accepting wager will set the currently logged in user as the taker
-                //       and change contract status to "active" to the backend/database.
-                onClick={() => {auth.user != null ? acceptWager(contract.id, auth.user.id) : setError("Couldnt go through")}}
-
-
-                // Logic: Disabled if already disabled in config (e.g., user not logged in)
-                disabled={config.isDisabled}
+                onClick={() => {
+                  auth.user != null ? acceptWager(contract.id, auth.user.id) : setError("Couldnt go through")
+                }}
+                disabled={config.isDisabled || isSubmitting}
               >
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 {auth.isAuthenticated ? "Accept Wager" : "Login to Accept"}
               </Button>
-
-          )}
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

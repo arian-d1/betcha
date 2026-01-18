@@ -106,6 +106,8 @@ async function createContract(req, res) {
       status: "open",
       winner: null,
       created_at: new Date(),
+      makerClaim: null,
+      takerClaim: null,
     };
 
     await db.createContract(contract);

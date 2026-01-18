@@ -81,6 +81,8 @@ async function createContract(contract) {
     status: contract.status ?? "open",
     winner: contract.winner,
     created_at: contract.created_at ?? new Date(),
+    makerClaim: contract.makerClaim,
+    takerClaim: contract.takerClaim,
   });
 }
 

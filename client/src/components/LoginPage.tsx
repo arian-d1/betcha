@@ -86,9 +86,9 @@ export default function LoginPage() {
             Login with your Google account to start wagering.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
+        <CardContent className="w-full flex justify-center pt-4">
           {/* Google button will be rendered here */}
-          <div id="googleButton" className="w-full"></div>
+          <div id="googleButton" className="flex justify-center w-full"></div>
         </CardContent>
       </Card>
     </div>

@@ -8,65 +8,77 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Chrome } from "lucide-react"; // Or use a Google Icon
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import api from "@/api/axios";
 import { UserContext } from "./contexts/UserContext";
 import { useNavigate } from "react-router-dom";
+import SetUsernamePage from "./SetUsernamePage";
 export default function LoginPage() {
 
   const auth = useContext(UserContext);
+  const [user, setUser] = useState(auth.user);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(auth.isAuthenticated);  
   const navigate = useNavigate(); 
   
-  function handleGoogleResponse(response: any) {
-    api
-    .post("/auth/google", {
-      token: response.credential,
-    })
-    .then((res) => {
-      console.log("Logged in user:", res.data.user);
+  const handleGoogleResponse = async (response: any) => {
+    try {
+      const res = await api.post("/auth/google", {
+        token: response.credential,
+      });
+      const user = res.data.user;
+      // Update Context State
       auth.setUser({
-        id: "1",
-        username: "name",
-        fname: "fname",
-        lname: "lname",
-        email: "email",
-        created_at: String(Date.now()),
-        balance: 100000,
-        times_banned: 1
+        id: user.uuid,
+        username: user.username,
+        fname: user.firstName,
+        lname: user.lastName,
+        email: user.email,
+        created_at: user.accountCreatedAt,
+        balance: user.balance,
+        times_banned: user.timesBanned,
       });
       auth.setIsAuthenticated(true);
-      window.location.href = "/"
-    })
-    .catch((err) => {
+      console.log(auth.user);
+      navigate(`/user/${user.id}`);
+    } catch (err) {
       console.error("Login failed", err);
-    })
-  }
+      // Optional: Add a toast notification here for the user
+    }
+  };
 
   useEffect(() => {
-    if (window.google) {
-      // 1. Initialize
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: handleGoogleResponse,
-        use_fedcm_for_prompt: false,
-      });
+    // Check if script is loaded
+    const initializeGoogle = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+          use_fedcm_for_prompt: false,
+        });
 
-      // 2. Render the actual Google button into a div
-      window.google.accounts.id.renderButton(
-        document.getElementById("googleButton"),
-        { 
-          theme: "outline", 
-          size: "large", 
-          width: "350", // Match your Card width
-          text: "signin_with",
-          shape: "rectangular" 
-        }
-      );
-    }
+        window.google.accounts.id.renderButton(
+          document.getElementById("googleButton"),
+          { 
+            theme: "outline", 
+            size: "large", 
+            width: "350", 
+            text: "signin_with",
+            shape: "rectangular" 
+          }
+        );
+      }
+    };
+
+    
+
+    // Small delay to ensure the DOM element #googleButton is rendered
+    const timer = setTimeout(initializeGoogle, 150);
+    return () => clearTimeout(timer);
   }, []);
   
-
-
+  if (auth.user && auth.user.username == "") {
+    return <SetUsernamePage></SetUsernamePage>
+  } 
   return (
     <div className="flex h-[80vh] items-center justify-center px-4">
       <Card className="w-full max-w-sm shadow-lg">

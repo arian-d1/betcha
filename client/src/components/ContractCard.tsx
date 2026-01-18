@@ -25,25 +25,7 @@ import {
 import { useContext } from "react";
 import { UserContext } from "./contexts/UserContext";
 
-import { useContext } from "react";
-import { UserContext } from "./contexts/UserContext";
 
-
-export default function ContractCard({ contract }: { contract: Contract }) {
-  const auth = useContext(UserContext);
-  const STATUS_CONFIG: Record<
-    ContractStatus,
-    {
-      label: string;
-      variant: "default" | "secondary" | "outline" | "ghost";
-      isDisabled: boolean;
-    }
-  > = {
-    open: { label: "Accept Wager", variant: "default", isDisabled: !auth.isAuthenticated },
-    active: { label: "In Progress", variant: "secondary", isDisabled: true },
-    resolved: { label: "View Result", variant: "outline", isDisabled: false },
-    cancelled: { label: "Voided", variant: "ghost", isDisabled: true },
-  };
 export default function ContractCard({ contract }: { contract: Contract }) {
   const auth = useContext(UserContext);
   const STATUS_CONFIG: Record<
@@ -65,8 +47,6 @@ export default function ContractCard({ contract }: { contract: Contract }) {
   return (
     <Dialog>
       {/* The Trigger is the card itself */}
-      
-        <Card className="w-full flex flex-col h-full transition-all hover:border-primary/50 overflow-hidden shadow-sm hover:shadow-md">
       
         <Card className="w-full flex flex-col h-full transition-all hover:border-primary/50 overflow-hidden shadow-sm hover:shadow-md">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b bg-muted/5">
@@ -134,14 +114,12 @@ export default function ContractCard({ contract }: { contract: Contract }) {
             ) : (
               /* Standard Button for all other states */
               <DialogTrigger asChild>
-              <DialogTrigger asChild>
               <Button
                 className="w-full font-bold uppercase text-xs tracking-wider"
                 variant={config.variant}
               >
                 {config.label}
               </Button>
-              </DialogTrigger>
               </DialogTrigger>
             )}
           </CardFooter>
@@ -194,13 +172,7 @@ export default function ContractCard({ contract }: { contract: Contract }) {
             <DialogTrigger asChild>
               <Button 
                 className="flex-1 sm:flex-none px-8 bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 disabled:bg-muted disabled:text-muted-foreground"
-
-                // REQUIRE: User must have sufficient funds
-                // EFFECT: Accepting wager will set the currently logged in user as the taker
-                //       and change contract status to "active" to the backend/database.
-                onClick={() => {}}
-
-
+                onClick={() => console.log("Wager Accepted")}
                 // Logic: Disabled if already disabled in config (e.g., user not logged in)
                 disabled={config.isDisabled}
               >

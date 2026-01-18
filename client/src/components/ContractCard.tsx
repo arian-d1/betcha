@@ -33,7 +33,7 @@ import { BiddingForm } from "./BiddingForm";
 export default function ContractCard({ contract, onDelete }: { contract: Contract, onDelete?: (id: string) => void }) {
   
   const auth = useContext(UserContext);
-  
+  const isMaker = auth.user?.id == contract.maker?.id;
   const STATUS_CONFIG: Record<
   ContractStatus,
   {
@@ -42,7 +42,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
     isDisabled: boolean;
   }
   > = {
-    open: { label: "Accept Wager", variant: "default", isDisabled: !auth.isAuthenticated },
+    open: { label: (isMaker ? "View Wager" : "Accept Wager"), variant: "default", isDisabled: !auth.isAuthenticated },
     active: { label: "In Progress", variant: "secondary", isDisabled: true },
     resolved: { label: "View Result", variant: "outline", isDisabled: false },
     cancelled: { label: "Voided", variant: "ghost", isDisabled: true },
@@ -411,7 +411,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
                 </Button>
               </DialogTrigger>
               
-              {contract.status === "open" && (
+              {contract.status === "open" && !isMaker && (
                 <Button 
                   className="flex-1 sm:flex-none px-8 bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 disabled:bg-muted disabled:text-muted-foreground"
                   onClick={() => {

@@ -1,4 +1,4 @@
-import type { User } from "./User.ts";
+  import type { User } from "./User.ts";
 import type { ContractStatus } from "./ContractStatus.ts";
 
 export interface Contract {

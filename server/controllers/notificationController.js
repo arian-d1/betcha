@@ -47,7 +47,7 @@ async function getNotifications(req, res) {
   }
 }
 
-// PUT /notifications
+// PUT /notification
 // body: { from_uid, to_uid, contract_id, amount, status? }
 async function createNotification(req, res) {
   try {
@@ -101,12 +101,13 @@ async function createNotification(req, res) {
   }
 }
 
-// PATCH /notifications/:notificationId
+// PATCH /notification/:notificationId
 // body: { status }
 async function patchNotificationStatus(req, res) {
   try {
     const { notificationId } = req.params;
     const { status } = req.body;
+    console.log("HERE" + notificationId);
 
     if (!notificationId) {
       return res.status(400).json({ success: false, error: "Missing notificationId" });
@@ -234,8 +235,12 @@ async function patchNotificationStatus(req, res) {
 
     // Non-accept case: just update notification status
     const result = await db.updateNotificationStatus(notificationId, status);
-    const updated = result?.value;
+    const updated = result?.value || result;
 
+    if (!updated || !updated.id) {
+      updated = await db.getNotification(notificationId);
+    }
+    
     if (!updated) {
       return res.status(404).json({ success: false, error: "Notification not found" });
     }

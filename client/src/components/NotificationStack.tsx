@@ -11,7 +11,6 @@ export function NotificationStack({ notifications, onAction }: {
   onAction: (id: string, action: 'accept' | 'decline') => void 
 }) {
   const unreadCount = notifications.filter(n => n.status === 'pending').length;
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -39,9 +38,10 @@ export function NotificationStack({ notifications, onAction }: {
             </div>
           ) : (
             notifications.map((n) => (
+              
               <div key={n.id} className="p-4 border-b last:border-0 hover:bg-muted/50 transition-colors">
                 <p className="text-xs font-medium mb-1 line-clamp-1">
-                  Raise offer for: <span className="font-bold">{n.contract_title}</span>
+                  Raise offer for: <span className="font-bold">{n.contract_title || "Unknown Contract"}</span>
                 </p>
                 <p className="text-sm font-bold text-green-600 mb-3">
                   ${n.amount.toFixed(2)}
@@ -51,7 +51,7 @@ export function NotificationStack({ notifications, onAction }: {
                   <Button 
                     size="sm" 
                     className="h-8 flex-1 bg-green-600 hover:bg-green-700 font-bold text-xs"
-                    onClick={() => onAction(n.n_id, 'accept')}
+                    onClick={() => onAction(n.id, 'accept')}
                   >
                     <Check className="h-3 w-3 mr-1" /> Accept
                   </Button>
@@ -59,7 +59,7 @@ export function NotificationStack({ notifications, onAction }: {
                     size="sm" 
                     variant="outline" 
                     className="h-8 flex-1 text-destructive hover:bg-destructive/10 border-destructive/20 font-bold text-xs"
-                    onClick={() => onAction(n.n_id, 'decline')}
+                    onClick={() => onAction(n.id, 'decline')}
                   >
                     <X className="h-3 w-3 mr-1" /> Decline
                   </Button>

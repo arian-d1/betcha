@@ -25,6 +25,7 @@ export default function UserProfile() {
   const auth = useContext(UserContext);
   const [contracts, setContracts] = useState<Array<Contract>>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
   if (auth.user == null) {
     return <UnauthorizedPage />;
   }
@@ -75,6 +76,12 @@ export default function UserProfile() {
 
   fetchContracts();
 }, []);
+
+  const placedWagers = contracts.filter(c => c.maker.id === auth.user?.id);
+  const takenWagers = contracts.filter(c => c.taker?.id === auth.user?.id);
+
+  if (auth.user == null) return <UnauthorizedPage />;
+  if (auth.user.username.trim() === "") return <SetUsernamePage />;
 
     return (
       <div className="container mx-auto py-10 px-4 max-w-5xl">
@@ -157,45 +164,38 @@ export default function UserProfile() {
 
           {/* Main Content: User's History */}
           <div className="md:col-span-2">
-            <Tabs defaultValue="activity" className="w-full">
+            <Tabs defaultValue="placed" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="activity">Recent Activity</TabsTrigger>
-                <TabsTrigger value="stats">Detailed Stats</TabsTrigger>
+                <TabsTrigger value="placed">Placed ({placedWagers.length})</TabsTrigger>
+                <TabsTrigger value="taken">Taken ({takenWagers.length})</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="activity" className="space-y-6">
-              {isLoading ? (
-                /* LOADER WHEEL SECTION */
-                <div className="flex flex-col items-center justify-center py-20 gap-4">
-                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                  <p className="text-muted-foreground animate-pulse text-sm">
-                    Retrieving your wagers...
-                  </p>
-                </div>
-              ) : (
-                /* ACTUAL CONTENT */
-                <div className="grid grid-cols-1 gap-4">
-                  {contracts.length > 0 ? (
-                    contracts.map((c) => (
-                      <ContractCard key={c.id} contract={c} />
-                    ))
-                  ) : (
-                    <p className="text-center py-10 text-muted-foreground italic border-2 border-dashed rounded-lg">
-                      No recent wagers found.
-                    </p>
-                  )}
-                </div>
-              )}
-            </TabsContent>
+              <TabsContent value="placed" className="space-y-4">
+                {isLoading ? (
+                  <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
+                ) : placedWagers.length > 0 ? (
+                  placedWagers.map((c) => (
+                    <ContractCard key={c.id} contract={c} onDelete={() => {}} />
+                  ))
+                ) : (
+                  <div className="text-center py-10 border-2 border-dashed rounded-lg text-muted-foreground">
+                    No wagers placed.
+                  </div>
+                )}
+              </TabsContent>
 
-              <TabsContent value="stats">
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground text-center py-10">
-                      Advanced analytics coming soon.
-                    </p>
-                  </CardContent>
-                </Card>
+              <TabsContent value="taken" className="space-y-4">
+                {isLoading ? (
+                  <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
+                ) : takenWagers.length > 0 ? (
+                  takenWagers.map((c) => (
+                    <ContractCard key={c.id} contract={c} />
+                  ))
+                ) : (
+                  <div className="text-center py-10 border-2 border-dashed rounded-lg text-muted-foreground">
+                    No wagers taken.
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>

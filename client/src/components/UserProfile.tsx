@@ -16,6 +16,7 @@ import ContractCard from "@/components/ContractCard";
 import { useContext } from "react";
 import { UserContext } from "./contexts/UserContext";
 import UnauthorizedPage from "./UnauthorizedPage";
+import SetUsernamePage from "./SetUsernamePage"; 
 
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,11 @@ export default function UserProfile() {
   if (auth.user == null) {
     return <UnauthorizedPage />;
   }
+
+  if (auth.user.username.trim() === "") {
+    return <SetUsernamePage />;
+  }
+
   const userContracts =
     auth.user == null
       ? []
@@ -35,10 +41,7 @@ export default function UserProfile() {
           (c) => c.maker.id === auth.user.id || c.taker?.id === auth.user.id,
         );
       
-  if (auth.user.username == "") {
-    navigate("/login")
-    location.reload();
-  } else {
+
     return (
       <div className="container mx-auto py-10 px-4 max-w-5xl">
         {/* Profile Header */}
@@ -155,4 +158,3 @@ export default function UserProfile() {
       </div>
     );
   }
-}

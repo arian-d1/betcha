@@ -339,7 +339,7 @@ async function resolveContract(req, res) {
 
     // Dispute case (both true or both false)
     if (!winnerId) {
-      await db.updateContract(contractId, { status: "disputed" });
+      await db.updateContract(contractId, { status: "resolved" });
       const disputed = await db.getContract(contractId);
 
       return res.json({

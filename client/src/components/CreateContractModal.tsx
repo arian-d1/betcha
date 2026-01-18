@@ -52,7 +52,9 @@ export default function CreateContractModal({ onContractCreated, isDisabled }: {
             setTitle("");
             setDescription("");
             setAmount(""); 
-        } 
+            
+            window.location.reload();
+          } 
     } catch (err: any) {
       console.error("Failed to create contract:", err);
       setError(err.response?.data?.error || "Something went wrong. Please try again.");

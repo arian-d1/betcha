@@ -96,6 +96,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
     try {
       await api.patch(`/contracts/${contract.id}/cancel`, { userId: auth.user?.id });
       if (onDelete) onDelete(contract.id);
+      window.location.reload();
     } catch (err) {
       console.error("Delete failed", err);
       alert("Failed to delete contract");
@@ -159,6 +160,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
         // Optional: Show a success toast or message
         alert("Proposal sent successfully!");
       }
+      window.location.reload();
     } catch (e: any) {
       const msg = e.response?.data.error || "Failed to send proposal";
       setError(msg);

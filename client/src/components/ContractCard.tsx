@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import type { Contract } from "@/types/Contract";
 import type { ContractStatus } from "@/types/ContractStatus";
-import { Coins, User2, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Coins, User2, ShieldCheck, ShieldAlert, Trash2, Loader2 } from "lucide-react";
 
 import { TrophyWinner } from "./ui/TrophyWinner";
 
@@ -22,19 +22,21 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { UserContext } from "./contexts/UserContext";
+import api from "@/api/axios";
 
 
-export default function ContractCard({ contract }: { contract: Contract }) {
+export default function ContractCard({ contract, onDelete }: { contract: Contract, onDelete?: (id: string) => void }) {
+  
   const auth = useContext(UserContext);
   const STATUS_CONFIG: Record<
-    ContractStatus,
-    {
-      label: string;
-      variant: "default" | "secondary" | "outline" | "ghost";
-      isDisabled: boolean;
-    }
+  ContractStatus,
+  {
+    label: string;
+    variant: "default" | "secondary" | "outline" | "ghost";
+    isDisabled: boolean;
+  }
   > = {
     open: { label: "Accept Wager", variant: "default", isDisabled: !auth.isAuthenticated },
     active: { label: "In Progress", variant: "secondary", isDisabled: true },
@@ -42,13 +44,48 @@ export default function ContractCard({ contract }: { contract: Contract }) {
     cancelled: { label: "Voided", variant: "ghost", isDisabled: true },
   };
   const config = STATUS_CONFIG[contract.status];
+  const [isDeleting, setIsDeleting] = useState(false);
+  const isOwner = auth.user?.id === contract.maker.id;
   const isTrusted = contract.maker.times_banned == 0;
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening the dialog
+    if (!confirm("Are you sure you want to delete this wager?")) return;
+
+    setIsDeleting(true);
+
+    try {
+      await api.patch(`/contracts/${contract.id}/cancel`, { userId: auth.user?.id });
+      if (onDelete) onDelete(contract.id);
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert("Failed to delete contract");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <Dialog>
       {/* The Trigger is the card itself */}
       
-        <Card className="w-full flex flex-col h-full transition-all hover:border-primary/50 overflow-hidden shadow-sm hover:shadow-md">
+        <Card className="relative w-full flex flex-col h-full transition-all hover:border-primary/50 overflow-hidden shadow-sm hover:shadow-md">
+          {/* Delete Button - Absolute Positioned */}
+          {isOwner && contract.status === "open" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 z-10"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </Button>
+          )}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b bg-muted/5">
             <div className="flex items-center text-sm font-bold text-green-600">
               <Coins className="mr-1.5 h-4 w-4" />${contract.amount.toFixed(2)}

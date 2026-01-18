@@ -56,8 +56,6 @@ export default function ContractFeed() {
   };
 
   fetchContracts();
-  // Removed [contracts.length] to prevent infinite loops; 
-  // only fetch on mount or if you implement a specific refresh trigger.
 }, []);
 
   const filteredContracts = contracts.filter((contract) => {
@@ -67,6 +65,10 @@ export default function ContractFeed() {
 
   const handleAddContract = (newContract: Contract) => {
     setContracts((prev) => [newContract, ...prev]);
+  };
+
+  const handleDeleteFromState = (id: string) => {
+    setContracts((prev) => prev.filter((c) => c.id !== id));
   };
 
   return (
@@ -107,7 +109,7 @@ export default function ContractFeed() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredContracts.length > 0 ? (
             filteredContracts.map((contract) => (
-              <ContractCard key={contract.id} contract={contract} />
+              <ContractCard key={contract.id} contract={contract} onDelete={handleDeleteFromState}/>
             ))
           ) : (
             <div className="col-span-full py-20 text-center border-2 border-dashed rounded-lg">

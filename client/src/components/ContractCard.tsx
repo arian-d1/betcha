@@ -25,6 +25,8 @@ import {
 import { useContext } from "react";
 import { UserContext } from "./contexts/UserContext";
 
+import api from "@/api/axios";
+
 
 export default function ContractCard({ contract }: { contract: Contract }) {
   const auth = useContext(UserContext);
@@ -43,6 +45,24 @@ export default function ContractCard({ contract }: { contract: Contract }) {
   };
   const config = STATUS_CONFIG[contract.status];
   const isTrusted = contract.maker.times_banned == 0;
+
+  // Accept Wager Handler
+  // REQUIRE: User must have sufficient funds
+  // EFFECT: Accepting wager will set the currently logged in user as the taker
+  //         and change contract status to "active" to the backend/database.
+  const acceptWager = async (contractId: string, takingUserId: string) => {
+    try {
+      const response = await api.patch(`/contracts/${contractId}/claim`, {
+        claimingUserId: takingUserId
+      });
+      if (response.data.success) {
+        contract = response.data.data;
+        auth.user!.balance = response.data.balance;
+      }
+    } catch (e: any) {
+      console.error("Error accepting wager:", e.response?.data.error);
+    }
+  };
 
   return (
     <Dialog>
@@ -176,7 +196,7 @@ export default function ContractCard({ contract }: { contract: Contract }) {
                 // REQUIRE: User must have sufficient funds
                 // EFFECT: Accepting wager will set the currently logged in user as the taker
                 //       and change contract status to "active" to the backend/database.
-                onClick={() => {}}
+                onClick={() => acceptWager(contract.id, auth.user!.id)}
 
 
                 // Logic: Disabled if already disabled in config (e.g., user not logged in)

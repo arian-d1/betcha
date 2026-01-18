@@ -1,4 +1,4 @@
-import { Sword, Scroll, ShieldCheck, Zap, Scale, Trophy } from "lucide-react";
+import { Sword, Swords, Scroll, Compass, Scale, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -20,8 +20,7 @@ export default function About() {
             THE RULES OF <span className="text-primary">ENGAGEMENT</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Betcha! is not just a sportsbook—it's a peer-to-peer arena where honor is tracked, 
-            stakes are real, and every duel is backed by code.
+            Betcha! Put your money where your mouth is.
           </p>
         </div>
         
@@ -34,23 +33,21 @@ export default function About() {
         <div className="grid md:grid-cols-3 gap-12">
           <div className="space-y-4">
             <div className="h-12 w-12 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-500">
-              <Zap className="w-6 h-6" />
+              <Swords className="w-6 h-6" />
             </div>
-            <h3 className="text-2xl font-bold italic">The Sharp Edge</h3>
+            <h3 className="text-2xl font-bold italic">One on One</h3>
             <p className="text-muted-foreground">
-              Our high-speed transaction engine ensures your wagers are claimed and 
-              locked instantly. No middleman, no waiting, just action.
+              Betcha! features a unique one versus one betting system making for intense competition and personal challenge.
             </p>
           </div>
 
           <div className="space-y-4">
             <div className="h-12 w-12 bg-green-500/10 rounded-lg flex items-center justify-center text-green-500">
-              <ShieldCheck className="w-6 h-6" />
+              <Compass className="w-6 h-6" />
             </div>
-            <h3 className="text-2xl font-bold italic">The Guarded Hilt</h3>
+            <h3 className="text-2xl font-bold italic">Choose Your Adventure</h3>
             <p className="text-muted-foreground">
-              Your balance is held in a secure internal ledger. Funds are only 
-              released once the duel is resolved or voided by the Maker.
+              Fully custom contracts allow players to choose their own wager and set bets on whatever you wish.
             </p>
           </div>
 
@@ -60,8 +57,7 @@ export default function About() {
             </div>
             <h3 className="text-2xl font-bold italic">The Honor Code</h3>
             <p className="text-muted-foreground">
-              We track reputation. The "Times Banned" metric ensures you know exactly 
-              who you are dueling before you ever put money on the line.
+              Don't lie: We track reputation. Contracts are settled primarily through an honour system. Lying is severely punished and your integrity is on full display.
             </p>
           </div>
         </div>
@@ -103,7 +99,7 @@ export default function About() {
         <h2 className="text-4xl font-bold mb-8 italic uppercase tracking-tighter">Ready to Duel?</h2>
         <Link to="/contracts">
           <Button size="lg" className="h-14 px-10 text-lg font-bold gap-2">
-            <Sword className="w-5 h-5 rotate-45" />
+            <Swords className="w-5 h-5" />
             ENTER THE ARENA
           </Button>
         </Link>

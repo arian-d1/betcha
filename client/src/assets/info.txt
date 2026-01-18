@@ -1,0 +1,14 @@
+
+Hope you enjoy your new logo, here are the people that
+made your beautiful logo happen :)
+font name: CooperHewitt-Semibold
+font link: https://www.cooperhewitt.org/open-source-at-cooper-hewitt/cooper-hewitt-the-typeface-by-chester-jenkins/
+font author: Chester Jenkins
+font author site: https://vllg.com/
+
+
+icon designer: Diego Naive
+icon designer link: /creator/diegonaive/
+        
+{"bg":"#FBF8F9","icon-gradient-0":"#CEAFEB","icon-gradient-1":"#EFDFB4","font":"#41393D","slogan":"#554d51"}
+      

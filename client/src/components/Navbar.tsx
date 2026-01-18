@@ -42,14 +42,36 @@ export function Navbar() {
           </Button>
         </Link>
 
-        <Link to="/contracts">
+         <Link to="/about">
           <Button
             variant="secondary"
             size="lg"
             className="gap-2 font-bold tracking-wide uppercase text-lg leading-none border border-transparent transition-colors hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary))]"
           >
+            <Info className="h-5 w-5" />
+            About
+          </Button>
+        </Link>
+
+        <Link to="/contracts">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="gap-2 font-bold tracking-wide uppercase text-lg leading-none border border-transparent transition-colors hover:bg-primary/7.5 hover:shadow-[0_0_0_1px_hsl(var(--primary))]"
+          >
             <Swords className="h-5 w-5" />
             Arena
+          </Button>
+        </Link>
+
+        <Link to="/about">
+          <Button
+            variant="secondary"
+            size="lg"
+            className="gap-2 font-bold tracking-wide uppercase text-lg leading-none border border-transparent transition-colors hover:bg-primary/7.5 hover:shadow-[0_0_0_1px_hsl(var(--primary))]"
+          >
+            <Info className="h-5 w-5" />
+            About
           </Button>
         </Link>
 

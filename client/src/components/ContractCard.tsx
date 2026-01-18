@@ -49,7 +49,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isOwner = auth.user?.id === contract.maker.id;
+  const isOwner = auth.user?.id == contract.maker.id;
   const isTrusted = contract.maker.times_banned == 0;
 
   const hasUserClaimed = isOwner 

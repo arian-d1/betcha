@@ -34,11 +34,13 @@ export default function ContractFeed() {
               
               // Fetch the full user profile from your user router
               const userRes = await api.get(`/user/${userId}`);
+              const taker = contract.taker ? await api.get(`/user/${contract.taker}`) : null;
               
               // Return the contract but replace the maker string with the user object
               return {
                 ...contract,
-                maker: userRes.data.data // This contains username, times_banned, etc.
+                maker: userRes.data.data, // This contains username, times_banned, etc.
+                taker: taker ? taker.data.data : taker
               };
             } catch (err) {
               console.error(`Failed to fetch profile for user ${contract.maker}`, err);
@@ -48,6 +50,7 @@ export default function ContractFeed() {
         );
 
         setContracts(hydratedContracts);
+        console.log(hydratedContracts);
       }
     } catch (error) {
       console.error("Error fetching contracts:", error);

@@ -2,20 +2,44 @@ import ContractCard from "./ContractCard";
 import type { Contract } from "@/types/Contract";
 import { MOCK_CONTRACTS } from "@/mock-data/mock-contracts";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, UserCog } from "lucide-react";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import CreateContractModal from "./CreateContractModal";
 import { UserContext } from "./contexts/UserContext";
+import api from "@/api/axios";
+import { Loader2 } from "lucide-react";
 
 export default function ContractFeed() {
-  const [contracts, setContracts] = useState<Array<Contract>>(MOCK_CONTRACTS);
+  const [contracts, setContracts] = useState<Array<Contract>>([]);
   const [activeTab, setActiveTab] = useState<string>("open");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   const auth = useContext(UserContext);
+
+  useEffect(() => {
+    const fetchContracts = async () => {
+      try {
+        setIsLoading(true);
+
+        const response = await api.get("/contracts");
+        
+        // Assuming your backend returns { success: true, data: [...] }
+        if (response.data && Array.isArray(response.data)) {
+          setContracts(response.data);
+        } else if (response.data.data) {
+          setContracts(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching contracts:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchContracts();
+  }, [contracts.length]);
 
   const filteredContracts = contracts.filter((contract) => {
     if (activeTab === "all") return true;
-    // Ensure your mock data categories match these values (case-sensitive)
     return contract.status.toLowerCase() === activeTab.toLowerCase();
   });
 
@@ -52,20 +76,24 @@ export default function ContractFeed() {
         </div>
       </Tabs>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Changed MOCK_CONTRACTS to filteredContracts */}
-        {filteredContracts.length > 0 ? (
-          filteredContracts.map((contract) => (
-            <ContractCard key={contract.id} contract={contract} />
-          ))
-        ) : (
-          <div className="col-span-full py-20 text-center border-2 border-dashed rounded-lg">
-            <p className="text-muted-foreground">
-              No contracts found for this status.
-            </p>
-          </div>
-        )}
-      </div>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-muted-foreground animate-pulse">Loading Arena...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredContracts.length > 0 ? (
+            filteredContracts.map((contract) => (
+              <ContractCard key={contract.id} contract={contract} />
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center border-2 border-dashed rounded-lg">
+              <p className="text-muted-foreground">No contracts found for this status.</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

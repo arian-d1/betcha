@@ -290,7 +290,7 @@ export default function ContractCard({ contract, onDelete }: { contract: Contrac
                <AvatarFallback><User2 /></AvatarFallback>
              </Avatar>
              <div>
-               <p className="text-sm font-bold">Taker: @{contract.taker == null ? "Unassigned" : contract.taker.username}</p>
+               <p className="text-sm font-bold">Taker: {contract.taker == null ? "Unassigned" : `@${contract.taker.username}`}</p>
                <p className="text-xs text-muted-foreground">
                  {isTrusted ? "Verified Maker" : `${contract.taker?.times_banned} violations reported`}
                </p>
